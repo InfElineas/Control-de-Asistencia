@@ -51,6 +51,7 @@ $$;
 DO $$
 DECLARE
   email_cols int2[];
+  has_unique_email boolean;
 BEGIN
   SELECT ARRAY(
     SELECT attnum
@@ -60,15 +61,17 @@ BEGIN
     ORDER BY attnum
   ) INTO email_cols;
 
-  IF NOT EXISTS (
+  SELECT EXISTS (
     SELECT 1
     FROM pg_index i
     JOIN pg_class t ON t.oid = i.indrelid
     WHERE t.oid = 'auth.users'::regclass
       AND i.indisunique
       AND i.indkey::int2[] = email_cols
-  ) THEN
-    EXECUTE 'CREATE UNIQUE INDEX IF NOT EXISTS auth_users_email_key ON auth.users (email)';
+  ) INTO has_unique_email;
+
+  IF NOT has_unique_email THEN
+    RAISE NOTICE 'Unique index on auth.users(email) is missing; cannot create it in this migration due to ownership restrictions.';
   END IF;
 END
 $$;
