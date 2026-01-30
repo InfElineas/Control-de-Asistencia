@@ -1,23 +1,74 @@
--- 1) departments.name debe ser unique porque lo usas en ON CONFLICT(name)
-alter table public.departments
-  add constraint departments_name_key unique (name);
+DO $$
+DECLARE
+  name_col int2[];
+BEGIN
+  SELECT ARRAY(
+    SELECT attnum
+    FROM pg_attribute
+    WHERE attrelid = 'public.departments'::regclass
+      AND attname = 'name'
+    ORDER BY attnum
+  ) INTO name_col;
 
--- 2) user_roles debe evitar duplicados por (user_id, role)
-do $$
-begin
-  if not exists (
-    select 1
-    from pg_constraint
-    where conname = 'departments_name_key'
-      and conrelid = 'public.departments'::regclass
-  ) then
-    alter table public.departments
-      add constraint departments_name_key unique (name);
-  end if;
-end $$;
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'public.departments'::regclass
+      AND contype = 'u'
+      AND conkey = name_col
+  ) THEN
+    ALTER TABLE public.departments
+      ADD CONSTRAINT departments_name_key UNIQUE (name);
+  END IF;
+END
+$$;
 
+DO $$
+DECLARE
+  role_cols int2[];
+BEGIN
+  SELECT ARRAY(
+    SELECT attnum
+    FROM pg_attribute
+    WHERE attrelid = 'public.user_roles'::regclass
+      AND attname IN ('user_id', 'role')
+    ORDER BY attnum
+  ) INTO role_cols;
 
--- 3) auth.users(email) normalmente YA es unique, pero si en tu entorno no lo está:
--- (en Supabase casi siempre existe, pero lo dejo como "seguro" vía índice)
-create unique index if not exists users_email_unique_idx
-  on auth.users (email);
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'public.user_roles'::regclass
+      AND contype = 'u'
+      AND conkey = role_cols
+  ) THEN
+    ALTER TABLE public.user_roles
+      ADD CONSTRAINT user_roles_user_id_role_key UNIQUE (user_id, role);
+  END IF;
+END
+$$;
+
+DO $$
+DECLARE
+  email_cols int2[];
+BEGIN
+  SELECT ARRAY(
+    SELECT attnum
+    FROM pg_attribute
+    WHERE attrelid = 'auth.users'::regclass
+      AND attname = 'email'
+    ORDER BY attnum
+  ) INTO email_cols;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_index i
+    JOIN pg_class t ON t.oid = i.indrelid
+    WHERE t.oid = 'auth.users'::regclass
+      AND i.indisunique
+      AND i.indkey::int2[] = email_cols
+  ) THEN
+    EXECUTE 'CREATE UNIQUE INDEX IF NOT EXISTS auth_users_email_key ON auth.users (email)';
+  END IF;
+END
+$$;
