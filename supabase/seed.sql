@@ -36,7 +36,9 @@ SELECT
   now(),
   now()
 FROM manager_dept
-ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'global.manager@example.com'
+);
 
 INSERT INTO public.user_roles (user_id, role)
 SELECT id, 'global_manager'::public.app_role
@@ -72,7 +74,9 @@ SELECT
   now(),
   now()
 FROM head_dept
-ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'dept.head@example.com'
+);
 
 INSERT INTO public.user_roles (user_id, role)
 SELECT id, 'department_head'::public.app_role
