@@ -38,7 +38,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
 
   const { signIn, signUp } = useAuth();
-  const { departments, loading: deptLoading } = useDepartments();
+  const { departments, loading: deptLoading, error: deptError } = useDepartments();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -166,6 +166,16 @@ export default function Auth() {
                       ))}
                     </SelectContent>
                   </Select>
+                )}
+                {!deptLoading && deptError && (
+                  <p className="text-sm text-destructive">
+                    No pudimos cargar los departamentos. Intenta recargar la página.
+                  </p>
+                )}
+                {!deptLoading && !deptError && departments.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No hay departamentos disponibles todavía.
+                  </p>
                 )}
               </div>
             )}
