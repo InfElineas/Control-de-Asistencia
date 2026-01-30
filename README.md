@@ -71,3 +71,39 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Local Supabase setup (for login to work)
+
+This project relies on Supabase Auth and database tables. To run the app locally with login:
+
+1. **Start Supabase locally**
+   ```sh
+   supabase start
+   ```
+
+2. **Reset DB and apply migrations + seed**
+   ```sh
+   supabase db reset
+   ```
+   This applies all migrations and runs `supabase/seed.sql` to insert departments and example users.
+
+3. **Set environment variables for the frontend**
+   Create a `.env.local` in the project root with:
+   ```sh
+   VITE_SUPABASE_URL=http://localhost:54321
+   VITE_SUPABASE_PUBLISHABLE_KEY=<YOUR_ANON_KEY>
+   ```
+   You can copy the anon key from:
+   ```sh
+   supabase status
+   ```
+
+4. **Run the app**
+   ```sh
+   npm install
+   npm run dev
+   ```
+
+### Seeded login accounts (from `supabase/seed.sql`)
+- `global.manager@example.com` / `Password123!`
+- `dept.head@example.com` / `Password123!`
