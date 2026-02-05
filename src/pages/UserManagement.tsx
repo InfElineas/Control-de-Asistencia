@@ -87,12 +87,6 @@ export default function UserManagement() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
 
-  useEffect(() => {
-    if (departments.length > 0) {
-      fetchUsers();
-    }
-  }, [departments, fetchUsers]);
-
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
@@ -135,6 +129,12 @@ export default function UserManagement() {
       setLoading(false);
     }
   }, [departments, toast]);
+
+  useEffect(() => {
+    if (departments.length > 0) {
+      fetchUsers();
+    }
+  }, [departments, fetchUsers]);
 
   const handleEditUser = (user: UserWithRole) => {
     setEditingUser(user);
