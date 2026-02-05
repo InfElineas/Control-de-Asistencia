@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getErrorMessage } from '@/lib/errors';
 
 interface GeofenceConfig {
   id: string;
@@ -25,8 +26,8 @@ export function useGeofenceConfig() {
 
       if (error) throw error;
       setConfig(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -48,8 +49,8 @@ export function useGeofenceConfig() {
       if (error) throw error;
       await fetchConfig();
       return { error: null };
-    } catch (err: any) {
-      return { error: err.message };
+    } catch (err: unknown) {
+      return { error: getErrorMessage(err) };
     }
   };
 

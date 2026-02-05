@@ -46,6 +46,15 @@ interface Employee {
   department_name: string;
 }
 
+interface ProfileWithDepartment {
+  id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  department_id: string;
+  departments: { name: string } | null;
+}
+
 interface AttendanceSummary {
   userId: string;
   employeeName: string;
@@ -100,7 +109,9 @@ export default function GlobalPanel() {
 
       const excludedUserIds = new Set(excludedRoles?.map((r) => r.user_id) || []);
 
-      const filteredEmployees = profilesData
+      const typedProfiles = (profilesData || []) as ProfileWithDepartment[];
+
+      const filteredEmployees = typedProfiles
         .filter((p) => !excludedUserIds.has(p.user_id))
         .map((p) => ({
           id: p.id,
@@ -108,7 +119,7 @@ export default function GlobalPanel() {
           full_name: p.full_name,
           email: p.email,
           department_id: p.department_id,
-          department_name: (p.departments as any)?.name || 'Sin departamento',
+          department_name: p.departments?.name || 'Sin departamento',
         }));
 
       setEmployees(filteredEmployees);
