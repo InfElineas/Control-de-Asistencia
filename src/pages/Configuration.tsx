@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { ComponentProps } from 'react';
 import { useGeofenceConfig } from '@/hooks/useGeofenceConfig';
 import { useDepartmentSchedules } from '@/hooks/useDepartmentSchedules';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -50,7 +51,9 @@ export default function Configuration() {
     setSaving(false);
   };
 
-  const handleSaveSchedule = async (departmentId: string, data: any) => {
+  type ScheduleUpdateData = ComponentProps<typeof DepartmentScheduleCard>['onSave'] extends (departmentId: string, data: infer T) => Promise<{ error: string | null }> ? T : never;
+
+  const handleSaveSchedule = async (departmentId: string, data: ScheduleUpdateData) => {
     const { error } = await updateSchedule(departmentId, data);
     if (error) {
       toast.error(`Error: ${error}`);

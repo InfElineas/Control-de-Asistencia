@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getErrorMessage } from '@/lib/errors';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface RestSchedule {
@@ -18,7 +19,7 @@ export function useRestSchedule() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSchedules = async () => {
+  const fetchSchedules = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -36,18 +37,18 @@ export function useRestSchedule() {
       const today = new Date().toISOString().split('T')[0];
       const current = (data || []).find(s => s.effective_from <= today);
       setCurrentSchedule(current || null);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
       fetchSchedules();
     }
-  }, [user]);
+  }, [user, fetchSchedules]);
 
   // Validate that rest days have at least 3 days of separation
   const validateRestDaysSeparation = (daysOfWeek: number[]): { valid: boolean; error?: string } => {
@@ -100,8 +101,8 @@ export function useRestSchedule() {
       if (error) throw error;
       await fetchSchedules();
       return { error: null };
-    } catch (err: any) {
-      return { error: err.message };
+    } catch (err: unknown) {
+      return { error: getErrorMessage(err) };
     }
   };
 

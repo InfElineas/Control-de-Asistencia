@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { getErrorMessage } from '@/lib/errors';
 
 interface AttendanceMark {
   id: string;
@@ -41,7 +42,7 @@ export function useAttendance() {
     error: null,
   });
 
-  const fetchTodayMarks = async () => {
+  const fetchTodayMarks = useCallback(async () => {
     if (!user) return;
 
     const today = new Date();
@@ -72,20 +73,20 @@ export function useAttendance() {
         loading: false,
         error: null,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setState(prev => ({
         ...prev,
         loading: false,
-        error: error.message,
+        error: getErrorMessage(error),
       }));
     }
-  };
+    }, [user]);
 
   useEffect(() => {
     if (user) {
       fetchTodayMarks();
     }
-  }, [user]);
+  }, [user, fetchTodayMarks]);
 
   const markAttendance = async (
     markType: 'IN' | 'OUT',
@@ -134,9 +135,9 @@ export function useAttendance() {
 
       await fetchTodayMarks();
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Attendance error:', error);
-      return { error: error.message || 'Error desconocido', code: 'UNKNOWN_ERROR' };
+      return { error: getErrorMessage(error, 'Error desconocido'), code: 'UNKNOWN_ERROR' };
     }
   };
 
