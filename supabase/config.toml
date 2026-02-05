@@ -1,0 +1,7 @@
+project_id = "kqyvqaxucvdaibpfzctq"
+
+[functions.create-user]
+verify_jwt = false
+
+[functions.validate-attendance]
+verify_jwt = false
