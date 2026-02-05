@@ -27,6 +27,7 @@ interface Props {
     checkin_end_time: string;
     checkout_start_time?: string | null;
     checkout_end_time?: string | null;
+    timezone?: string;
     allow_early_checkin?: boolean;
     allow_late_checkout?: boolean;
   }) => Promise<{ error: string | null }>;
@@ -39,6 +40,7 @@ export function DepartmentScheduleCard({ departmentId, departmentName, schedule,
     checkin_end_time: schedule?.checkin_end_time?.slice(0, 5) || '09:00',
     checkout_start_time: schedule?.checkout_start_time?.slice(0, 5) || '17:00',
     checkout_end_time: schedule?.checkout_end_time?.slice(0, 5) || '19:00',
+    timezone: schedule?.timezone || 'Europe/Madrid',
     allow_early_checkin: schedule?.allow_early_checkin ?? false,
     allow_late_checkout: schedule?.allow_late_checkout ?? true,
   });
@@ -50,6 +52,7 @@ export function DepartmentScheduleCard({ departmentId, departmentName, schedule,
         checkin_end_time: schedule.checkin_end_time?.slice(0, 5) || '09:00',
         checkout_start_time: schedule.checkout_start_time?.slice(0, 5) || '17:00',
         checkout_end_time: schedule.checkout_end_time?.slice(0, 5) || '19:00',
+        timezone: schedule.timezone || 'Europe/Madrid',
         allow_early_checkin: schedule.allow_early_checkin ?? false,
         allow_late_checkout: schedule.allow_late_checkout ?? true,
       });
@@ -63,6 +66,7 @@ export function DepartmentScheduleCard({ departmentId, departmentName, schedule,
       checkin_end_time: form.checkin_end_time + ':00',
       checkout_start_time: form.checkout_start_time + ':00',
       checkout_end_time: form.checkout_end_time + ':00',
+      timezone: form.timezone,
       allow_early_checkin: form.allow_early_checkin,
       allow_late_checkout: form.allow_late_checkout,
     });
@@ -74,6 +78,7 @@ export function DepartmentScheduleCard({ departmentId, departmentName, schedule,
       form.checkin_end_time !== schedule.checkin_end_time?.slice(0, 5) ||
       form.checkout_start_time !== schedule.checkout_start_time?.slice(0, 5) ||
       form.checkout_end_time !== schedule.checkout_end_time?.slice(0, 5) ||
+      form.timezone !== schedule.timezone ||
       form.allow_early_checkin !== schedule.allow_early_checkin ||
       form.allow_late_checkout !== schedule.allow_late_checkout
     : true;
@@ -132,6 +137,18 @@ export function DepartmentScheduleCard({ departmentId, departmentName, schedule,
               onChange={(e) => setForm((p) => ({ ...p, checkout_end_time: e.target.value }))}
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs">Zona horaria (IANA)</Label>
+          <Input
+            value={form.timezone}
+            onChange={(e) => setForm((p) => ({ ...p, timezone: e.target.value }))}
+            placeholder="Ej: America/Lima, Europe/Madrid"
+          />
+          <p className="text-xs text-muted-foreground">
+            Usa el formato IANA. Ejemplos: America/Lima, America/Bogota, America/Mexico_City, Europe/Madrid.
+          </p>
         </div>
 
         <div className="flex flex-col gap-3 pt-2">

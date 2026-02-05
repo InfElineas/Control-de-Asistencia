@@ -115,12 +115,13 @@ serve(async (req: Request): Promise<Response> => {
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating user:", error);
+    const message = error instanceof Error ? error.message : "Unexpected error";
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: message }),
       {
-        status: error.message === "Unauthorized" ? 401 : 400,
+        status: message === "Unauthorized" ? 401 : 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );

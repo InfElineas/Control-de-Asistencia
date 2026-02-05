@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { useAuth, AppRole } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useDepartments } from '@/hooks/useDepartments';
 
 interface NavItem {
   href: string;
@@ -38,7 +39,10 @@ const navItems: NavItem[] = [
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { profile, role, signOut } = useAuth();
+  const { departments } = useDepartments();
   const location = useLocation();
+
+  const departmentName = departments.find((department) => department.id === profile?.department_id)?.name;
 
   const filteredNavItems = navItems.filter((item) => {
     // Check if user is excluded from this item
@@ -117,6 +121,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="mb-3">
             <p className="font-medium text-sm">{profile?.full_name}</p>
             <p className="text-xs text-muted-foreground capitalize">{role?.replace('_', ' ')}</p>
+            <p className="text-xs text-muted-foreground">Departamento: {departmentName || 'Sin departamento'}</p>
           </div>
           <Button variant="outline" className="w-full" onClick={signOut}>
             <LogOut className="h-4 w-4 mr-2" />
@@ -145,6 +150,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="mb-3">
             <p className="font-medium text-sm">{profile?.full_name}</p>
             <p className="text-xs text-muted-foreground capitalize">{role?.replace('_', ' ')}</p>
+            <p className="text-xs text-muted-foreground">Departamento: {departmentName || 'Sin departamento'}</p>
           </div>
           <Button variant="outline" className="w-full" onClick={signOut}>
             <LogOut className="h-4 w-4 mr-2" />
