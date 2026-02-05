@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -29,9 +29,9 @@ export default function History() {
       fetchRecords();
       fetchMarkedDates();
     }
-  }, [user, selectedDate]);
+  }, [user, fetchRecords, fetchMarkedDates]);
 
-  const fetchRecords = async () => {
+  const fetchRecords = useCallback(async () => {
     if (!user) return;
     setLoading(true);
 
@@ -52,9 +52,9 @@ export default function History() {
       setRecords(data as AttendanceRecord[]);
     }
     setLoading(false);
-  };
+  }, [selectedDate, user]);
 
-  const fetchMarkedDates = async () => {
+  const fetchMarkedDates = useCallback(async () => {
     if (!user) return;
 
     const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
@@ -73,7 +73,7 @@ export default function History() {
       );
       setMarkedDates(dates);
     }
-  };
+  }, [selectedDate, user]);
 
   const getDayStatus = (): 'PRESENTE' | 'AUSENTE' | null => {
     if (records.length === 0) return null;
