@@ -20,7 +20,7 @@ export default function Attendance() {
   const { isRestDay } = useRestSchedule();
   const { config, loading: configLoading } = useGeofenceConfig();
   const { isGlobalManager, loading: gmLoading } = useGlobalManagerCheck();
-  const { schedule, isWithinCheckinWindow, loading: scheduleLoading } = useDepartmentSchedule();
+  const { schedule, isWithinCheckinWindow, getCurrentTimeLabel, loading: scheduleLoading } = useDepartmentSchedule();
   const {
     latitude,
     longitude,
@@ -143,6 +143,9 @@ export default function Attendance() {
               <p className="font-medium text-primary">Horario de entrada</p>
               <p className="text-sm text-muted-foreground">
                 {schedule.checkin_start_time.slice(0, 5)} - {schedule.checkin_end_time.slice(0, 5)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Hora actual: {getCurrentTimeLabel()}
               </p>
             </div>
           </div>
