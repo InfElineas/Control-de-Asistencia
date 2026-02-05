@@ -15,7 +15,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, AlertCircle, MapPin } from 'lucide-react';
 import { z } from 'zod';
-import { getErrorMessage } from '@/lib/errors';
+import { mapAuthError } from '@/lib/error-messages';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -58,11 +58,7 @@ export default function Auth() {
 
         const { error } = await signIn(email, password);
         if (error) {
-          if (error.message.includes('Invalid login')) {
-            setError('Email o contraseña incorrectos');
-          } else {
-            setError(error.message);
-          }
+          setError(mapAuthError(error, 'signin'));
           setLoading(false);
           return;
         }
@@ -76,11 +72,7 @@ export default function Auth() {
 
         const { error } = await signUp(email, password, fullName, departmentId);
         if (error) {
-          if (error.message.includes('already registered')) {
-            setError('Este email ya está registrado');
-          } else {
-            setError(error.message);
-          }
+          setError(mapAuthError(error, 'signup'));
           setLoading(false);
           return;
         }
@@ -88,7 +80,7 @@ export default function Auth() {
 
       navigate('/');
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Error inesperado'));
+      setError(mapAuthError(err, isLogin ? 'signin' : 'signup'));
     } finally {
       setLoading(false);
     }

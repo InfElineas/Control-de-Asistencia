@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useAuth, AppRole } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { getErrorMessage } from '@/lib/errors';
+import { mapUserManagementError } from '@/lib/error-messages';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -122,7 +122,7 @@ export default function UserManagement() {
     } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: getErrorMessage(error),
+        description: mapUserManagementError(error, 'fetch'),
         variant: 'destructive',
       });
     } finally {
@@ -195,7 +195,7 @@ export default function UserManagement() {
     } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: getErrorMessage(error),
+        description: mapUserManagementError(error, 'update'),
         variant: 'destructive',
       });
     } finally {
@@ -249,7 +249,7 @@ export default function UserManagement() {
       setCreateDialogOpen(false);
       fetchUsers();
     } catch (error: unknown) {
-      setCreateError(getErrorMessage(error, 'Error al crear usuario'));
+      setCreateError(mapUserManagementError(error, 'create'));
     } finally {
       setCreating(false);
     }

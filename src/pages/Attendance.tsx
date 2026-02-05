@@ -13,6 +13,7 @@ import { TodayMarks } from '@/components/attendance/TodayMarks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Calendar, ShieldX, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { mapAttendanceError } from '@/lib/error-messages';
 
 export default function Attendance() {
   const { profile } = useAuth();
@@ -103,7 +104,7 @@ export default function Attendance() {
     });
 
     if (error) {
-      toast.error(error);
+      toast.error(mapAttendanceError(error));
     } else {
       toast.success(`${type === 'IN' ? 'Entrada' : 'Salida'} registrada correctamente`);
     }
