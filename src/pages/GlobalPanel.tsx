@@ -79,6 +79,7 @@ export default function GlobalPanel() {
     from: format(subDays(new Date(), 7), 'yyyy-MM-dd'),
     to: format(new Date(), 'yyyy-MM-dd'),
   });
+  const [includeHeadsInGlobalReports, setIncludeHeadsInGlobalReports] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -86,6 +87,16 @@ export default function GlobalPanel() {
 
   const fetchData = async () => {
     setLoading(true);
+
+    // Load config to determine whether to include department heads
+    const { data: configData } = await supabase
+      .from('app_config')
+      .select('value')
+      .eq('key', 'include_heads_in_global_reports')
+      .maybeSingle();
+
+    const includeHeads = configData?.value === true;
+    setIncludeHeadsInGlobalReports(includeHeads);
 
     // Fetch all employees (excluding department heads based on config)
     // First get all profiles with their departments
@@ -102,10 +113,12 @@ export default function GlobalPanel() {
 
     if (profilesData) {
       // Filter out department heads and global managers (they are not part of attendance statistics)
+      const rolesToExclude = includeHeads ? ['global_manager'] : ['department_head', 'global_manager'];
+
       const { data: excludedRoles } = await supabase
         .from('user_roles')
         .select('user_id, role')
-        .in('role', ['department_head', 'global_manager']);
+        .in('role', rolesToExclude);
 
       const excludedUserIds = new Set(excludedRoles?.map((r) => r.user_id) || []);
 
@@ -255,7 +268,7 @@ export default function GlobalPanel() {
           <div>
             <h1 className="text-2xl font-bold">Panel Global</h1>
             <p className="text-muted-foreground">
-              Vista general de todos los empleados
+              Vista general de todos los empleados · Jefes incluidos: {includeHeadsInGlobalReports ? 'Sí' : 'No'}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

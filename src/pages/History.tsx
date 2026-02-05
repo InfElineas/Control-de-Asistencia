@@ -24,13 +24,6 @@ export default function History() {
   const [loading, setLoading] = useState(true);
   const [markedDates, setMarkedDates] = useState<Date[]>([]);
 
-  useEffect(() => {
-    if (user) {
-      fetchRecords();
-      fetchMarkedDates();
-    }
-  }, [user, fetchRecords, fetchMarkedDates]);
-
   const fetchRecords = useCallback(async () => {
     if (!user) return;
     setLoading(true);
@@ -74,6 +67,13 @@ export default function History() {
       setMarkedDates(dates);
     }
   }, [selectedDate, user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchRecords();
+      fetchMarkedDates();
+    }
+  }, [user, fetchRecords, fetchMarkedDates]);
 
   const getDayStatus = (): 'PRESENTE' | 'AUSENTE' | null => {
     if (records.length === 0) return null;
