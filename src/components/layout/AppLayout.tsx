@@ -85,10 +85,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-card border-b z-50 px-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-            EL
-          </div>
-          <span className="font-semibold">ELINEAS</span>
+          <img
+            src="/logo-control-asistencia.svg"
+            alt="Control de Asistencia ELINEAS"
+            className="h-8 w-8 rounded-md object-cover"
+          />
+          <span className="font-semibold text-sm leading-tight">Control de Asistencia ELINEAS</span>
         </div>
         <Button
           variant="ghost"
@@ -134,12 +136,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <aside className="hidden lg:flex lg:flex-col lg:fixed lg:left-0 lg:top-0 lg:bottom-0 lg:w-64 bg-card border-r">
         <div className="p-6 border-b">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold">
-              EL
-            </div>
+            <img
+              src="/logo-control-asistencia.svg"
+              alt="Control de Asistencia ELINEAS"
+              className="h-10 w-10 rounded-lg object-cover"
+            />
             <div>
-              <h1 className="font-bold">ELINEAS</h1>
-              <p className="text-xs text-muted-foreground">Control de Asistencia</p>
+              <h1 className="font-bold">Control de Asistencia ELINEAS</h1>
+              <p className="text-xs text-muted-foreground">Plataforma de gestión de asistencia</p>
             </div>
           </div>
         </div>
