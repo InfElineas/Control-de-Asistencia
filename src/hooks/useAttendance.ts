@@ -31,6 +31,33 @@ interface MarkAttendanceResult {
   code?: string;
 }
 
+interface FunctionErrorPayload {
+  error?: string;
+  code?: string;
+  allowed?: boolean;
+}
+
+
+function hasFunctionContext(error: unknown): error is { context: Response } {
+  return typeof error === 'object' && error !== null && 'context' in error;
+}
+
+async function parseFunctionError(error: unknown): Promise<MarkAttendanceResult | null> {
+  if (!hasFunctionContext(error)) {
+    return null;
+  }
+
+  try {
+    const payload = (await error.context.clone().json()) as FunctionErrorPayload;
+    if (payload?.error) {
+      return { error: payload.error, code: payload.code || 'FUNCTION_ERROR' };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function useAttendance() {
   const { user } = useAuth();
   const [state, setState] = useState<AttendanceState>({
@@ -122,8 +149,11 @@ export function useAttendance() {
       });
 
       if (response.error) {
-        // Handle function invocation error
         console.error('Edge function error:', response.error);
+        const parsedFunctionError = await parseFunctionError(response.error);
+        if (parsedFunctionError) {
+          return parsedFunctionError;
+        }
         return { error: 'Error al conectar con el servidor', code: 'CONNECTION_ERROR' };
       }
 

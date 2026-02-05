@@ -57,8 +57,15 @@ export function mapFormValidationError(message: string): string {
 
 
 export function mapAttendanceError(error: unknown): string {
-  const raw = getErrorMessage(error).toLowerCase();
+  const message = getErrorMessage(error);
+  const raw = message.toLowerCase();
 
+  if (includesAny(raw, ['hora de entrada excedida', 'entrada anticipada no permitida'])) {
+    return message;
+  }
+  if (includesAny(raw, ['departamento sin horario'])) {
+    return 'Tu departamento no tiene un horario configurado para registrar entrada.';
+  }
   if (includesAny(raw, ['outside geofence', 'fuera de la zona', 'geofence'])) {
     return 'Debes estar dentro de la zona autorizada para registrar asistencia.';
   }
@@ -69,7 +76,7 @@ export function mapAttendanceError(error: unknown): string {
     return 'No se pudo conectar con el servidor. Intenta de nuevo.';
   }
 
-  return 'No fue posible registrar la asistencia. Intenta nuevamente.';
+  return message || 'No fue posible registrar la asistencia. Intenta nuevamente.';
 }
 
 export function mapGenericActionError(error: unknown, fallback: string): string {
