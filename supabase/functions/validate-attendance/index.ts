@@ -20,8 +20,55 @@ interface ValidationResult {
   department_id: string | null;
 }
 
+interface CheckoutConfig {
+  checkout_start_time: string | null;
+  timezone: string;
+}
+
+function parseTimeToSeconds(time: string): number {
+  const [hours = '0', minutes = '0', seconds = '0'] = time.split(':');
+  return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds);
+}
+
+function getCurrentSecondsInTimezone(timezone: string): number {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: timezone,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date());
+
+  const hour = parts.find((part) => part.type === 'hour')?.value ?? '00';
+  const minute = parts.find((part) => part.type === 'minute')?.value ?? '00';
+  const second = parts.find((part) => part.type === 'second')?.value ?? '00';
+
+  return parseTimeToSeconds(`${hour}:${minute}:${second}`);
+}
+
+async function hasReachedCheckoutTime(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  departmentId: string | null
+): Promise<boolean> {
+  if (!departmentId) return false;
+
+  const { data, error } = await supabaseAdmin
+    .from('department_schedules')
+    .select('checkout_start_time, timezone')
+    .eq('department_id', departmentId)
+    .single<CheckoutConfig>();
+
+  if (error || !data?.checkout_start_time) {
+    return false;
+  }
+
+  const checkoutSeconds = parseTimeToSeconds(data.checkout_start_time);
+  const currentSeconds = getCurrentSecondsInTimezone(data.timezone || 'UTC');
+
+  return currentSeconds >= checkoutSeconds;
+}
+
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -29,8 +76,7 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    // Get authorization header
+
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
@@ -39,13 +85,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create client with user's token to get user info
     const supabaseUser = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
       global: { headers: { Authorization: authHeader } }
     });
 
     const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
-    
+
     if (userError || !user) {
       console.error('Auth error:', userError);
       return new Response(
@@ -54,9 +99,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Validating attendance for user: ${user.id}`);
-
-    // Parse request body
     const body: ValidationRequest = await req.json();
     const { mark_type, latitude, longitude, accuracy, distance_to_center, inside_geofence } = body;
 
@@ -67,10 +109,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Use service role client for database operations
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Call the validation function
     const { data: validationResult, error: validationError } = await supabaseAdmin
       .rpc('validate_attendance_mark', {
         _user_id: user.id,
@@ -86,7 +126,7 @@ Deno.serve(async (req) => {
     }
 
     const result = validationResult?.[0] as ValidationResult | undefined;
-    
+
     if (!result) {
       return new Response(
         JSON.stringify({ error: 'Error en la validación', code: 'VALIDATION_ERROR' }),
@@ -94,12 +134,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Validation result: allowed=${result.allowed}, reason=${result.reason}`);
-
-    // If not allowed, return 403
     if (!result.allowed) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: result.reason || 'No autorizado para registrar asistencia',
           code: 'FORBIDDEN',
           allowed: false
@@ -108,11 +145,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check geofence if provided
-    if (inside_geofence === false) {
+    if (mark_type === 'IN' && inside_geofence === false) {
       return new Response(
-        JSON.stringify({ 
-          error: 'Debes estar dentro de la zona permitida para marcar asistencia',
+        JSON.stringify({
+          error: 'Debes estar dentro de la zona permitida para marcar entrada',
           code: 'OUTSIDE_GEOFENCE',
           allowed: false
         }),
@@ -120,16 +156,30 @@ Deno.serve(async (req) => {
       );
     }
 
-    // All validations passed - insert the attendance mark
+    if (mark_type === 'OUT' && inside_geofence !== false) {
+      const reachedCheckout = await hasReachedCheckoutTime(supabaseAdmin, result.department_id);
+
+      if (!reachedCheckout) {
+        return new Response(
+          JSON.stringify({
+            error: 'La salida se habilita al salir de la zona o al llegar al horario de salida.',
+            code: 'OUT_NOT_ALLOWED_YET',
+            allowed: false
+          }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     const { data: markData, error: insertError } = await supabaseAdmin
       .from('attendance_marks')
       .insert({
         user_id: user.id,
-        mark_type: mark_type,
-        latitude: latitude,
-        longitude: longitude,
-        accuracy: accuracy,
-        distance_to_center: distance_to_center,
+        mark_type,
+        latitude,
+        longitude,
+        accuracy,
+        distance_to_center,
         inside_geofence: inside_geofence ?? true,
         blocked: false,
       })
@@ -144,11 +194,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Attendance marked successfully: ${markData.id}`);
-
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         allowed: true,
         mark: markData,
         message: mark_type === 'IN' ? 'Entrada registrada correctamente' : 'Salida registrada correctamente'

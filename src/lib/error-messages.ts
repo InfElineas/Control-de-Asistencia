@@ -60,7 +60,7 @@ export function mapAttendanceError(error: unknown): string {
   const message = getErrorMessage(error);
   const raw = message.toLowerCase();
 
-  if (includesAny(raw, ['hora de entrada excedida', 'entrada anticipada no permitida'])) {
+  if (includesAny(raw, ['hora de entrada excedida', 'entrada anticipada no permitida', 'salida se habilita al salir de la zona'])) {
     return message;
   }
   if (includesAny(raw, ['departamento sin horario'])) {

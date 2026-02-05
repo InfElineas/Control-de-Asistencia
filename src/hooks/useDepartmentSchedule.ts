@@ -21,15 +21,27 @@ function parseTimeToSeconds(time: string): number {
 }
 
 function getCurrentTimeInTimezone(timezone: string): string {
-  const formatter = new Intl.DateTimeFormat('en-GB', {
-    timeZone: timezone,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  });
+  try {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: timezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).formatToParts(new Date());
 
-  return formatter.format(new Date());
+    const hour = parts.find((part) => part.type === 'hour')?.value ?? '00';
+    const minute = parts.find((part) => part.type === 'minute')?.value ?? '00';
+    const second = parts.find((part) => part.type === 'second')?.value ?? '00';
+
+    return `${hour}:${minute}:${second}`;
+  } catch {
+    const now = new Date();
+    const hour = String(now.getUTCHours()).padStart(2, '0');
+    const minute = String(now.getUTCMinutes()).padStart(2, '0');
+    const second = String(now.getUTCSeconds()).padStart(2, '0');
+    return `${hour}:${minute}:${second}`;
+  }
 }
 
 export function useDepartmentSchedule() {
@@ -100,11 +112,22 @@ export function useDepartmentSchedule() {
     return `${currentTime.slice(0, 5)} (${schedule.timezone})`;
   };
 
+  const hasReachedCheckoutTime = (): boolean => {
+    if (!schedule?.checkout_start_time) return false;
+
+    const currentTime = getCurrentTimeInTimezone(schedule.timezone);
+    const currentSeconds = parseTimeToSeconds(currentTime);
+    const checkoutStartSeconds = parseTimeToSeconds(schedule.checkout_start_time);
+
+    return currentSeconds >= checkoutStartSeconds;
+  };
+
   return {
     schedule,
     loading,
     error,
     isWithinCheckinWindow,
     getCurrentTimeLabel,
+    hasReachedCheckoutTime,
   };
 }

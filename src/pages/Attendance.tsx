@@ -20,7 +20,13 @@ export default function Attendance() {
   const { isRestDay } = useRestSchedule();
   const { config, loading: configLoading } = useGeofenceConfig();
   const { isGlobalManager, loading: gmLoading } = useGlobalManagerCheck();
-  const { schedule, isWithinCheckinWindow, getCurrentTimeLabel, loading: scheduleLoading } = useDepartmentSchedule();
+  const {
+    schedule,
+    isWithinCheckinWindow,
+    getCurrentTimeLabel,
+    hasReachedCheckoutTime,
+    loading: scheduleLoading,
+  } = useDepartmentSchedule();
   const {
     latitude,
     longitude,
@@ -79,8 +85,15 @@ export default function Attendance() {
       return;
     }
 
-    if (!geofenceResult?.isInside) {
+    const canMarkOutBySchedule = type === 'OUT' && hasReachedCheckoutTime();
+
+    if (type === 'IN' && !geofenceResult?.isInside) {
       toast.error('No puedes marcar fuera de la zona permitida');
+      return;
+    }
+
+    if (type === 'OUT' && geofenceResult?.isInside && !canMarkOutBySchedule) {
+      toast.error('La salida se habilita al salir de la zona o al llegar al horario de salida');
       return;
     }
 
@@ -94,8 +107,8 @@ export default function Attendance() {
       latitude,
       longitude,
       accuracy,
-      distanceToCenter: geofenceResult.distance,
-      insideGeofence: geofenceResult.isInside,
+      distanceToCenter: geofenceResult?.distance ?? null,
+      insideGeofence: (geofenceResult?.isInside ?? false) || canMarkOutBySchedule,
     });
 
     if (error) {
@@ -142,11 +155,14 @@ export default function Attendance() {
             <div>
               <p className="font-medium text-primary">Horario de entrada</p>
               <p className="text-sm text-muted-foreground">
-                {schedule.checkin_start_time.slice(0, 5)} - {schedule.checkin_end_time.slice(0, 5)}
+                Entrada: {schedule.checkin_start_time.slice(0, 5)} - {schedule.checkin_end_time.slice(0, 5)}
               </p>
-              <p className="text-xs text-muted-foreground">
-                Hora actual: {getCurrentTimeLabel()}
-              </p>
+              <p className="text-xs text-muted-foreground">Hora actual: {getCurrentTimeLabel()}</p>
+              {schedule.checkout_start_time && (
+                <p className="text-xs text-muted-foreground">
+                  Salida desde: {schedule.checkout_start_time.slice(0, 5)}
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -223,7 +239,7 @@ export default function Attendance() {
             {canMarkOut && (
               <AttendanceButton
                 type="OUT"
-                disabled={!geofenceResult?.isInside}
+                disabled={(geofenceResult?.isInside ?? true) && !hasReachedCheckoutTime()}
                 loading={marking}
                 onClick={() => handleMark('OUT')}
               />
