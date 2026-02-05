@@ -68,10 +68,10 @@ export default function Attendance() {
   const checkinCheck = isWithinCheckinWindow();
   
   // Check if marking is allowed
-  const canMark = !isGlobalManager && 
-                  geofenceResult?.isInside && 
-                  !isRest && 
-                  (canMarkOut || checkinCheck.allowed);
+  const canMark = !isGlobalManager &&
+                  geofenceResult?.isInside &&
+                  !isRest &&
+                  (canMarkIn || canMarkOut);
 
   const handleMark = async (type: 'IN' | 'OUT') => {
     if (isGlobalManager) {
@@ -86,11 +86,6 @@ export default function Attendance() {
 
     if (isRest) {
       toast.error('Hoy es tu día de descanso');
-      return;
-    }
-
-    if (type === 'IN' && !checkinCheck.allowed) {
-      toast.error(checkinCheck.message || 'Fuera del horario de entrada');
       return;
     }
 
@@ -217,7 +212,7 @@ export default function Attendance() {
             {canMarkIn && (
               <AttendanceButton
                 type="IN"
-                disabled={!canMark || !checkinCheck.allowed}
+                disabled={!canMark}
                 loading={marking}
                 onClick={() => handleMark('IN')}
               />
