@@ -71,3 +71,10 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Auditoría de usabilidad y calidad
+
+Se generó una auditoría con hallazgos y plan de acción en:
+
+- `docs/usabilidad-calidad-reporte.md`
+- `docs/guia-remediacion-paso-a-paso.md`
