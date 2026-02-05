@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useAuth, AppRole } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { getErrorMessage } from '@/lib/errors';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -86,13 +87,7 @@ export default function UserManagement() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
 
-  useEffect(() => {
-    if (departments.length > 0) {
-      fetchUsers();
-    }
-  }, [departments]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -124,16 +119,22 @@ export default function UserManagement() {
       });
 
       setUsers(usersWithRoles);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: error.message,
+        description: getErrorMessage(error),
         variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [departments, toast]);
+
+  useEffect(() => {
+    if (departments.length > 0) {
+      fetchUsers();
+    }
+  }, [departments, fetchUsers]);
 
   const handleEditUser = (user: UserWithRole) => {
     setEditingUser(user);
@@ -191,10 +192,10 @@ export default function UserManagement() {
       setDialogOpen(false);
       setEditingUser(null);
       fetchUsers();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: error.message,
+        description: getErrorMessage(error),
         variant: 'destructive',
       });
     } finally {
@@ -247,8 +248,8 @@ export default function UserManagement() {
       setNewUserRole('employee');
       setCreateDialogOpen(false);
       fetchUsers();
-    } catch (error: any) {
-      setCreateError(error.message || 'Error al crear usuario');
+    } catch (error: unknown) {
+      setCreateError(getErrorMessage(error, 'Error al crear usuario'));
     } finally {
       setCreating(false);
     }

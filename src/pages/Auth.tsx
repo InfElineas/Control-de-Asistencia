@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, AlertCircle, MapPin } from 'lucide-react';
 import { z } from 'zod';
+import { getErrorMessage } from '@/lib/errors';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -86,8 +87,8 @@ export default function Auth() {
       }
 
       navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'Error inesperado');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Error inesperado'));
     } finally {
       setLoading(false);
     }
