@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Calendar, Plus, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { mapGenericActionError } from '@/lib/error-messages';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -62,7 +63,7 @@ export default function RestSchedule() {
     const { error } = await addSchedule(selectedDays, effectiveFrom, notes || undefined);
     
     if (error) {
-      toast.error(`Error: ${error}`);
+      toast.error(mapGenericActionError(error, 'No se pudo completar la operación.'));
     } else {
       toast.success('Días de descanso guardados correctamente');
       setSelectedDays([]);
