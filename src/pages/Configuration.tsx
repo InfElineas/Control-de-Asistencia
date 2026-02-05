@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { ComponentProps } from 'react';
 import { useGeofenceConfig } from '@/hooks/useGeofenceConfig';
 import { useDepartmentSchedules } from '@/hooks/useDepartmentSchedules';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -11,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, MapPin, Clock, Settings, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import { mapGenericActionError } from '@/lib/error-messages';
 
 export default function Configuration() {
   const { config, loading, updateConfig } = useGeofenceConfig();
@@ -43,17 +45,19 @@ export default function Configuration() {
     const { error } = await updateConfig(geofenceForm);
     
     if (error) {
-      toast.error(`Error: ${error}`);
+      toast.error(mapGenericActionError(error, 'No se pudo completar la operación.'));
     } else {
       toast.success('Configuración de geofence guardada');
     }
     setSaving(false);
   };
 
-  const handleSaveSchedule = async (departmentId: string, data: any) => {
+  type ScheduleUpdateData = ComponentProps<typeof DepartmentScheduleCard>['onSave'] extends (departmentId: string, data: infer T) => Promise<{ error: string | null }> ? T : never;
+
+  const handleSaveSchedule = async (departmentId: string, data: ScheduleUpdateData) => {
     const { error } = await updateSchedule(departmentId, data);
     if (error) {
-      toast.error(`Error: ${error}`);
+      toast.error(mapGenericActionError(error, 'No se pudo completar la operación.'));
     } else {
       toast.success('Horario guardado correctamente');
     }

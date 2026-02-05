@@ -13,6 +13,7 @@ import { TodayMarks } from '@/components/attendance/TodayMarks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Calendar, ShieldX, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { mapAttendanceError } from '@/lib/error-messages';
 
 export default function Attendance() {
   const { profile } = useAuth();
@@ -60,17 +61,17 @@ export default function Attendance() {
   // Get location on mount
   useEffect(() => {
     getCurrentPosition();
-  }, []);
+  }, [getCurrentPosition]);
 
   const today = new Date();
   const isRest = isRestDay(today);
   const checkinCheck = isWithinCheckinWindow();
   
   // Check if marking is allowed
-  const canMark = !isGlobalManager && 
-                  geofenceResult?.isInside && 
-                  !isRest && 
-                  (canMarkOut || checkinCheck.allowed);
+  const canMark = !isGlobalManager &&
+                  geofenceResult?.isInside &&
+                  !isRest &&
+                  (canMarkIn || canMarkOut);
 
   const handleMark = async (type: 'IN' | 'OUT') => {
     if (isGlobalManager) {
@@ -88,11 +89,6 @@ export default function Attendance() {
       return;
     }
 
-    if (type === 'IN' && !checkinCheck.allowed) {
-      toast.error(checkinCheck.message || 'Fuera del horario de entrada');
-      return;
-    }
-
     setMarking(true);
     const { error, code } = await markAttendance(type, {
       latitude,
@@ -103,7 +99,7 @@ export default function Attendance() {
     });
 
     if (error) {
-      toast.error(error);
+      toast.error(mapAttendanceError(error));
     } else {
       toast.success(`${type === 'IN' ? 'Entrada' : 'Salida'} registrada correctamente`);
     }
@@ -216,7 +212,7 @@ export default function Attendance() {
             {canMarkIn && (
               <AttendanceButton
                 type="IN"
-                disabled={!canMark || !checkinCheck.allowed}
+                disabled={!canMark}
                 loading={marking}
                 onClick={() => handleMark('IN')}
               />
