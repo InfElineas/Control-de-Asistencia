@@ -60,7 +60,7 @@ export default function Attendance() {
   // Get location on mount
   useEffect(() => {
     getCurrentPosition();
-  }, []);
+  }, [getCurrentPosition]);
 
   const today = new Date();
   const isRest = isRestDay(today);

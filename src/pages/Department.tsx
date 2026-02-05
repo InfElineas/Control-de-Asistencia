@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -65,9 +65,9 @@ export default function Department() {
     if (profile?.department_id) {
       fetchData();
     }
-  }, [profile?.department_id]);
+  }, [profile?.department_id, fetchData]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!profile?.department_id) return;
     setLoading(true);
 
@@ -131,7 +131,7 @@ export default function Department() {
     }
 
     setLoading(false);
-  };
+  }, [profile?.department_id]);
 
   const handleExport = async () => {
     setExporting(true);
