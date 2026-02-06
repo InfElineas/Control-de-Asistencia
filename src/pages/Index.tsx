@@ -225,10 +225,10 @@ export default function Index() {
                     <span className="font-medium">{getMarkLabel(mark.mark_type)}</span>
                     <span className="text-muted-foreground">{format(new Date(mark.timestamp), 'HH:mm')}</span>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            )}
+          </>
         )}
 
         {roleQuickAccess.length > 0 && (
