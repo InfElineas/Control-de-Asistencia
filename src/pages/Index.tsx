@@ -1,25 +1,49 @@
 import { useEffect, type ElementType } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import {
+  ArrowRight,
+  Building2,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Loader2,
+  Settings,
+  UserCog,
+  Users,
+  XCircle,
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAttendance } from '@/hooks/useAttendance';
 import { useRestSchedule } from '@/hooks/useRestSchedule';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Clock,
-  Calendar,
-  CheckCircle,
-  XCircle,
-  ArrowRight,
-  Loader2,
-  UserCog,
-  Settings,
-  Users,
-  Building2,
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+
+type MarkType = 'IN' | 'OUT';
+
+interface QuickAccessItem {
+  label: string;
+  description: string;
+  icon: ElementType;
+  route: string;
+}
+
+function getMarkBadgeClass(markType: MarkType): string {
+  return markType === 'IN' ? 'bg-success' : 'bg-primary';
+}
+
+function getMarkLabel(markType: MarkType): string {
+  return markType === 'IN' ? 'Entrada' : 'Salida';
+}
+
+function getGreeting(now: Date): string {
+  const hour = now.getHours();
+  if (hour < 12) return 'Buenos días';
+  if (hour < 19) return 'Buenas tardes';
+  return 'Buenas noches';
+}
 
 interface QuickAccessItem {
   label: string;
@@ -48,7 +72,7 @@ export default function Index() {
     if (!authLoading && !user) {
       navigate('/auth');
     }
-  }, [user, authLoading, navigate]);
+  }, [authLoading, navigate, user]);
 
   if (authLoading || !user) {
     return (
@@ -60,57 +84,49 @@ export default function Index() {
 
   const today = new Date();
   const isRest = isRestDay(today);
-  const hasMarkedIn = todayMarks.some((m) => m.mark_type === 'IN');
-  const hasMarkedOut = todayMarks.some((m) => m.mark_type === 'OUT');
+  const hasMarkedIn = todayMarks.some((mark) => mark.mark_type === 'IN');
+  const hasMarkedOut = todayMarks.some((mark) => mark.mark_type === 'OUT');
   const isGlobalManager = role === 'global_manager';
   const isDepartmentHead = role === 'department_head';
 
-  const greeting = (() => {
-    const hour = today.getHours();
-    if (hour < 12) return 'Buenos días';
-    if (hour < 19) return 'Buenas tardes';
-    return 'Buenas noches';
-  })();
-
-  const roleQuickAccess: QuickAccessItem[] = isGlobalManager
-    ? [
-        {
-          label: 'Panel global',
-          description: 'Métricas y consolidado general',
-          icon: Users,
-          route: '/global',
-        },
-        {
-          label: 'Usuarios',
-          description: 'Gestión de cuentas y permisos',
-          icon: UserCog,
-          route: '/users',
-        },
-        {
-          label: 'Configuración',
-          description: 'Reglas y parámetros del sistema',
-          icon: Settings,
-          route: '/configuration',
-        },
-      ]
-    : isDepartmentHead
-      ? [
-          {
-            label: 'Mi departamento',
-            description: 'Supervisión del equipo',
-            icon: Building2,
-            route: '/department',
-          },
-        ]
-      : [];
+  const quickAccess: QuickAccessItem[] = [];
+  if (isGlobalManager) {
+    quickAccess.push(
+      {
+        label: 'Panel global',
+        description: 'Métricas y consolidado general',
+        icon: Users,
+        route: '/global',
+      },
+      {
+        label: 'Usuarios',
+        description: 'Gestión de cuentas y permisos',
+        icon: UserCog,
+        route: '/users',
+      },
+      {
+        label: 'Configuración',
+        description: 'Reglas y parámetros del sistema',
+        icon: Settings,
+        route: '/configuration',
+      }
+    );
+  } else if (isDepartmentHead) {
+    quickAccess.push({
+      label: 'Mi departamento',
+      description: 'Supervisión del equipo',
+      icon: Building2,
+      route: '/department',
+    });
+  }
 
   return (
     <AppLayout>
-      <div className="space-y-6 animate-fade-in max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
         <Card className="overflow-hidden border-0 shadow-sm" style={{ background: 'var(--gradient-hero)' }}>
           <CardContent className="p-6">
             <div className="text-white">
-              <p className="text-white/80">{greeting}</p>
+              <p className="text-white/80">{getGreeting(today)}</p>
               <h1 className="text-2xl font-bold mt-1">{profile?.full_name}</h1>
               <p className="text-white/70 text-sm mt-1 capitalize">{role?.replace('_', ' ')}</p>
             </div>
@@ -128,7 +144,7 @@ export default function Index() {
                 <CardTitle className="text-sm text-muted-foreground">Estado de hoy</CardTitle>
               </CardHeader>
               <CardContent>
-                {isRest ? (
+                {isRest && (
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-xl bg-neutral/20">
                       <Calendar className="h-6 w-6 text-neutral" />
@@ -138,7 +154,9 @@ export default function Index() {
                       <p className="text-sm text-muted-foreground">No es necesario marcar hoy</p>
                     </div>
                   </div>
-                ) : hasMarkedIn ? (
+                )}
+
+                {!isRest && hasMarkedIn && (
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-xl bg-success/20">
                       <CheckCircle className="h-6 w-6 text-success" />
@@ -148,11 +166,13 @@ export default function Index() {
                         {hasMarkedOut ? 'Jornada completada' : 'Entrada registrada'}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {lastMark && `Último marcaje: ${format(new Date(lastMark.timestamp), 'HH:mm')}`}
+                        {lastMark ? `Último marcaje: ${format(new Date(lastMark.timestamp), 'HH:mm')}` : 'Sin marcajes'}
                       </p>
                     </div>
                   </div>
-                ) : (
+                )}
+
+                {!isRest && !hasMarkedIn && (
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-xl bg-warning/20">
                       <XCircle className="h-6 w-6 text-warning" />
@@ -167,10 +187,7 @@ export default function Index() {
             </Card>
 
             {!isRest && (
-              <Card
-                className="group hover:shadow-lg transition-all cursor-pointer h-full"
-                onClick={() => navigate('/attendance')}
-              >
+              <Card className="group h-full cursor-pointer transition-all hover:shadow-lg" onClick={() => navigate('/attendance')}>
                 <CardContent className="p-6 h-full flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="p-3 rounded-xl bg-primary/10">
@@ -183,15 +200,12 @@ export default function Index() {
                       </p>
                     </div>
                   </div>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <ArrowRight className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary" />
                 </CardContent>
               </Card>
             )}
 
-            <Card
-              className="group hover:shadow-lg transition-all cursor-pointer h-full"
-              onClick={() => navigate('/rest-schedule')}
-            >
+            <Card className="group h-full cursor-pointer transition-all hover:shadow-lg" onClick={() => navigate('/rest-schedule')}>
               <CardContent className="p-6 h-full flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="p-3 rounded-xl bg-accent/10">
@@ -206,13 +220,13 @@ export default function Index() {
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-accent transition-colors" />
+                <ArrowRight className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-accent" />
               </CardContent>
             </Card>
           </div>
         )}
 
-        {todayMarks.length > 0 && !isGlobalManager && (
+        {!isGlobalManager && todayMarks.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Marcajes de hoy</CardTitle>
@@ -221,8 +235,8 @@ export default function Index() {
               <div className="flex flex-wrap gap-3">
                 {todayMarks.map((mark) => (
                   <div key={mark.id} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary">
-                    <span className={cn('w-2 h-2 rounded-full', getMarkBadgeClass(mark.mark_type))} />
-                    <span className="font-medium">{getMarkLabel(mark.mark_type)}</span>
+                    <span className={cn('w-2 h-2 rounded-full', getMarkBadgeClass(mark.mark_type as MarkType))} />
+                    <span className="font-medium">{getMarkLabel(mark.mark_type as MarkType)}</span>
                     <span className="text-muted-foreground">{format(new Date(mark.timestamp), 'HH:mm')}</span>
                   </div>
                 </CardContent>
@@ -231,14 +245,14 @@ export default function Index() {
           </>
         )}
 
-        {roleQuickAccess.length > 0 && (
+        {quickAccess.length > 0 && (
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">Accesos rápidos</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {roleQuickAccess.map((item) => (
+                {quickAccess.map((item) => (
                   <button
                     key={item.route}
                     type="button"
@@ -251,7 +265,7 @@ export default function Index() {
                       </div>
                       <div className="min-w-0">
                         <p className="font-semibold leading-tight">{item.label}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
                       </div>
                       <ArrowRight className="ml-auto h-4 w-4 text-muted-foreground group-hover:text-primary" />
                     </div>
