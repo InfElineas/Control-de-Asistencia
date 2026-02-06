@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, type ElementType } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAttendance } from '@/hooks/useAttendance';
@@ -23,8 +23,12 @@ import { es } from 'date-fns/locale';
 interface QuickAccessItem {
   label: string;
   description: string;
-  icon: React.ElementType;
+  icon: ElementType;
   route: string;
+}
+
+function getMarkBadgeClass(markType: 'IN' | 'OUT'): string {
+  return markType === 'IN' ? 'bg-success' : 'bg-primary';
 }
 
 export default function Index() {
@@ -54,12 +58,44 @@ export default function Index() {
   const isGlobalManager = role === 'global_manager';
   const isDepartmentHead = role === 'department_head';
 
-  const getGreeting = () => {
+  const greeting = (() => {
     const hour = today.getHours();
     if (hour < 12) return 'Buenos días';
     if (hour < 19) return 'Buenas tardes';
     return 'Buenas noches';
-  };
+  })();
+
+  const roleQuickAccess: QuickAccessItem[] = isGlobalManager
+    ? [
+        {
+          label: 'Panel global',
+          description: 'Métricas y consolidado general',
+          icon: Users,
+          route: '/global',
+        },
+        {
+          label: 'Usuarios',
+          description: 'Gestión de cuentas y permisos',
+          icon: UserCog,
+          route: '/users',
+        },
+        {
+          label: 'Configuración',
+          description: 'Reglas y parámetros del sistema',
+          icon: Settings,
+          route: '/configuration',
+        },
+      ]
+    : isDepartmentHead
+      ? [
+          {
+            label: 'Mi departamento',
+            description: 'Supervisión del equipo',
+            icon: Building2,
+            route: '/department',
+          },
+        ]
+      : [];
 
   const roleQuickAccess: QuickAccessItem[] = isGlobalManager
     ? [
@@ -99,7 +135,7 @@ export default function Index() {
         <Card className="overflow-hidden border-0 shadow-sm" style={{ background: 'var(--gradient-hero)' }}>
           <CardContent className="p-6">
             <div className="text-white">
-              <p className="text-white/80">{getGreeting()}</p>
+              <p className="text-white/80">{greeting}</p>
               <h1 className="text-2xl font-bold mt-1">{profile?.full_name}</h1>
               <p className="text-white/70 text-sm mt-1 capitalize">{role?.replace('_', ' ')}</p>
             </div>
@@ -156,7 +192,10 @@ export default function Index() {
             </Card>
 
             {!isRest && (
-              <Card className="group hover:shadow-lg transition-all cursor-pointer h-full" onClick={() => navigate('/attendance')}>
+              <Card
+                className="group hover:shadow-lg transition-all cursor-pointer h-full"
+                onClick={() => navigate('/attendance')}
+              >
                 <CardContent className="p-6 h-full flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="p-3 rounded-xl bg-primary/10">
@@ -174,7 +213,10 @@ export default function Index() {
               </Card>
             )}
 
-            <Card className="group hover:shadow-lg transition-all cursor-pointer h-full" onClick={() => navigate('/rest-schedule')}>
+            <Card
+              className="group hover:shadow-lg transition-all cursor-pointer h-full"
+              onClick={() => navigate('/rest-schedule')}
+            >
               <CardContent className="p-6 h-full flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="p-3 rounded-xl bg-accent/10">
@@ -204,7 +246,7 @@ export default function Index() {
               <div className="flex flex-wrap gap-3">
                 {todayMarks.map((mark) => (
                   <div key={mark.id} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary">
-                    <span className={`w-2 h-2 rounded-full ${mark.mark_type === 'IN' ? 'bg-success' : 'bg-primary'}`} />
+                    <span className={`w-2 h-2 rounded-full ${getMarkBadgeClass(mark.mark_type)}`} />
                     <span className="font-medium">{mark.mark_type === 'IN' ? 'Entrada' : 'Salida'}</span>
                     <span className="text-muted-foreground">{format(new Date(mark.timestamp), 'HH:mm')}</span>
                   </div>
