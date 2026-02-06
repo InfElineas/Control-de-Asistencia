@@ -13,13 +13,20 @@ import { TodayMarks } from '@/components/attendance/TodayMarks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Calendar, ShieldX, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { mapAttendanceError } from '@/lib/error-messages';
 
 export default function Attendance() {
   const { profile } = useAuth();
   const { isRestDay } = useRestSchedule();
   const { config, loading: configLoading } = useGeofenceConfig();
   const { isGlobalManager, loading: gmLoading } = useGlobalManagerCheck();
-  const { schedule, isWithinCheckinWindow, loading: scheduleLoading } = useDepartmentSchedule();
+  const {
+    schedule,
+    isWithinCheckinWindow,
+    getCurrentTimeLabel,
+    hasReachedCheckoutTime,
+    loading: scheduleLoading,
+  } = useDepartmentSchedule();
   const {
     latitude,
     longitude,
@@ -60,17 +67,17 @@ export default function Attendance() {
   // Get location on mount
   useEffect(() => {
     getCurrentPosition();
-  }, []);
+  }, [getCurrentPosition]);
 
   const today = new Date();
   const isRest = isRestDay(today);
   const checkinCheck = isWithinCheckinWindow();
   
   // Check if marking is allowed
-  const canMark = !isGlobalManager && 
-                  geofenceResult?.isInside && 
-                  !isRest && 
-                  (canMarkOut || checkinCheck.allowed);
+  const canMark = !isGlobalManager &&
+                  geofenceResult?.isInside &&
+                  !isRest &&
+                  (canMarkIn || canMarkOut);
 
   const handleMark = async (type: 'IN' | 'OUT') => {
     if (isGlobalManager) {
@@ -78,8 +85,15 @@ export default function Attendance() {
       return;
     }
 
-    if (!geofenceResult?.isInside) {
+    const canMarkOutBySchedule = type === 'OUT' && hasReachedCheckoutTime();
+
+    if (type === 'IN' && !geofenceResult?.isInside) {
       toast.error('No puedes marcar fuera de la zona permitida');
+      return;
+    }
+
+    if (type === 'OUT' && geofenceResult?.isInside && !canMarkOutBySchedule) {
+      toast.error('La salida se habilita al salir de la zona o al llegar al horario de salida');
       return;
     }
 
@@ -88,22 +102,17 @@ export default function Attendance() {
       return;
     }
 
-    if (type === 'IN' && !checkinCheck.allowed) {
-      toast.error(checkinCheck.message || 'Fuera del horario de entrada');
-      return;
-    }
-
     setMarking(true);
     const { error, code } = await markAttendance(type, {
       latitude,
       longitude,
       accuracy,
-      distanceToCenter: geofenceResult.distance,
-      insideGeofence: geofenceResult.isInside,
+      distanceToCenter: geofenceResult?.distance ?? null,
+      insideGeofence: (geofenceResult?.isInside ?? false) || canMarkOutBySchedule,
     });
 
     if (error) {
-      toast.error(error);
+      toast.error(mapAttendanceError(error));
     } else {
       toast.success(`${type === 'IN' ? 'Entrada' : 'Salida'} registrada correctamente`);
     }
@@ -146,8 +155,14 @@ export default function Attendance() {
             <div>
               <p className="font-medium text-primary">Horario de entrada</p>
               <p className="text-sm text-muted-foreground">
-                {schedule.checkin_start_time.slice(0, 5)} - {schedule.checkin_end_time.slice(0, 5)}
+                Entrada: {schedule.checkin_start_time.slice(0, 5)} - {schedule.checkin_end_time.slice(0, 5)}
               </p>
+              <p className="text-xs text-muted-foreground">Hora actual: {getCurrentTimeLabel()}</p>
+              {schedule.checkout_start_time && (
+                <p className="text-xs text-muted-foreground">
+                  Salida desde: {schedule.checkout_start_time.slice(0, 5)}
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -216,7 +231,7 @@ export default function Attendance() {
             {canMarkIn && (
               <AttendanceButton
                 type="IN"
-                disabled={!canMark || !checkinCheck.allowed}
+                disabled={!canMark}
                 loading={marking}
                 onClick={() => handleMark('IN')}
               />
@@ -224,7 +239,7 @@ export default function Attendance() {
             {canMarkOut && (
               <AttendanceButton
                 type="OUT"
-                disabled={!geofenceResult?.isInside}
+                disabled={(geofenceResult?.isInside ?? true) && !hasReachedCheckoutTime()}
                 loading={marking}
                 onClick={() => handleMark('OUT')}
               />

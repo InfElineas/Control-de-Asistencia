@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getErrorMessage } from '@/lib/errors';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface DepartmentSchedule {
@@ -12,6 +13,35 @@ interface DepartmentSchedule {
   timezone: string;
   allow_early_checkin: boolean;
   allow_late_checkout: boolean;
+}
+
+function parseTimeToSeconds(time: string): number {
+  const [hours = '0', minutes = '0', seconds = '0'] = time.split(':');
+  return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds);
+}
+
+function getCurrentTimeInTimezone(timezone: string): string {
+  try {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: timezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).formatToParts(new Date());
+
+    const hour = parts.find((part) => part.type === 'hour')?.value ?? '00';
+    const minute = parts.find((part) => part.type === 'minute')?.value ?? '00';
+    const second = parts.find((part) => part.type === 'second')?.value ?? '00';
+
+    return `${hour}:${minute}:${second}`;
+  } catch {
+    const now = new Date();
+    const hour = String(now.getUTCHours()).padStart(2, '0');
+    const minute = String(now.getUTCMinutes()).padStart(2, '0');
+    const second = String(now.getUTCSeconds()).padStart(2, '0');
+    return `${hour}:${minute}:${second}`;
+  }
 }
 
 export function useDepartmentSchedule() {
@@ -39,8 +69,8 @@ export function useDepartmentSchedule() {
         }
 
         setSchedule(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }
@@ -54,33 +84,42 @@ export function useDepartmentSchedule() {
       return { allowed: false, message: 'Departamento sin horario configurado' };
     }
 
-    const now = new Date();
-    const currentTime = now.toLocaleTimeString('en-GB', { 
-      timeZone: schedule.timezone,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false 
-    });
+    const currentTime = getCurrentTimeInTimezone(schedule.timezone);
+    const currentSeconds = parseTimeToSeconds(currentTime);
+    const startSeconds = parseTimeToSeconds(schedule.checkin_start_time);
+    const endSeconds = parseTimeToSeconds(schedule.checkin_end_time);
 
-    const start = schedule.checkin_start_time;
-    const end = schedule.checkin_end_time;
-
-    if (currentTime < start && !schedule.allow_early_checkin) {
-      return { 
-        allowed: false, 
-        message: `Entrada anticipada no permitida. Horario: ${start.slice(0,5)} - ${end.slice(0,5)}` 
+    if (currentSeconds < startSeconds && !schedule.allow_early_checkin) {
+      return {
+        allowed: false,
+        message: `Entrada anticipada no permitida. Horario: ${schedule.checkin_start_time.slice(0, 5)} - ${schedule.checkin_end_time.slice(0, 5)} (${schedule.timezone})`,
       };
     }
 
-    if (currentTime > end) {
-      return { 
-        allowed: false, 
-        message: `Hora de entrada excedida. Horario: ${start.slice(0,5)} - ${end.slice(0,5)}` 
+    if (currentSeconds > endSeconds) {
+      return {
+        allowed: false,
+        message: `Hora de entrada excedida. Horario: ${schedule.checkin_start_time.slice(0, 5)} - ${schedule.checkin_end_time.slice(0, 5)} (${schedule.timezone})`,
       };
     }
 
     return { allowed: true, message: null };
+  };
+
+  const getCurrentTimeLabel = (): string | null => {
+    if (!schedule) return null;
+    const currentTime = getCurrentTimeInTimezone(schedule.timezone);
+    return `${currentTime.slice(0, 5)} (${schedule.timezone})`;
+  };
+
+  const hasReachedCheckoutTime = (): boolean => {
+    if (!schedule?.checkout_start_time) return false;
+
+    const currentTime = getCurrentTimeInTimezone(schedule.timezone);
+    const currentSeconds = parseTimeToSeconds(currentTime);
+    const checkoutStartSeconds = parseTimeToSeconds(schedule.checkout_start_time);
+
+    return currentSeconds >= checkoutStartSeconds;
   };
 
   return {
@@ -88,5 +127,7 @@ export function useDepartmentSchedule() {
     loading,
     error,
     isWithinCheckinWindow,
+    getCurrentTimeLabel,
+    hasReachedCheckoutTime,
   };
 }

@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { useAuth, AppRole } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useDepartments } from '@/hooks/useDepartments';
 
 interface NavItem {
   href: string;
@@ -38,7 +39,10 @@ const navItems: NavItem[] = [
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { profile, role, signOut } = useAuth();
+  const { departments } = useDepartments();
   const location = useLocation();
+
+  const departmentName = departments.find((department) => department.id === profile?.department_id)?.name;
 
   const filteredNavItems = navItems.filter((item) => {
     // Check if user is excluded from this item
@@ -81,10 +85,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-card border-b z-50 px-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-            EL
-          </div>
-          <span className="font-semibold">ELINEAS</span>
+          <img
+            src="/logo-control-asistencia.svg"
+            alt="Control de Asistencia ELINEAS"
+            className="h-8 w-8 rounded-md object-cover"
+          />
+          <span className="font-semibold text-sm leading-tight">Asistencia ELINEAS</span>
         </div>
         <Button
           variant="ghost"
@@ -117,6 +123,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="mb-3">
             <p className="font-medium text-sm">{profile?.full_name}</p>
             <p className="text-xs text-muted-foreground capitalize">{role?.replace('_', ' ')}</p>
+            <p className="text-xs text-muted-foreground">Departamento: {departmentName || 'Sin departamento'}</p>
           </div>
           <Button variant="outline" className="w-full" onClick={signOut}>
             <LogOut className="h-4 w-4 mr-2" />
@@ -127,14 +134,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:fixed lg:left-0 lg:top-0 lg:bottom-0 lg:w-64 bg-card border-r">
-        <div className="p-6 border-b">
+        <div className="p-5 border-b bg-muted/20">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold">
-              EL
-            </div>
-            <div>
-              <h1 className="font-bold">ELINEAS</h1>
-              <p className="text-xs text-muted-foreground">Control de Asistencia</p>
+            <img
+              src="/logo-control-asistencia.svg"
+              alt="Control de Asistencia ELINEAS"
+              className="h-12 w-12 rounded-lg object-cover shadow-sm"
+            />
+            <div className="min-w-0">
+              <h1 className="font-bold text-base leading-tight">Control de Asistencia</h1>
+              <p className="text-base leading-tight font-semibold text-primary">ELINEAS</p>
+              <p className="text-xs text-muted-foreground">Plataforma de gestión de asistencia</p>
             </div>
           </div>
         </div>
@@ -145,6 +155,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="mb-3">
             <p className="font-medium text-sm">{profile?.full_name}</p>
             <p className="text-xs text-muted-foreground capitalize">{role?.replace('_', ' ')}</p>
+            <p className="text-xs text-muted-foreground">Departamento: {departmentName || 'Sin departamento'}</p>
           </div>
           <Button variant="outline" className="w-full" onClick={signOut}>
             <LogOut className="h-4 w-4 mr-2" />

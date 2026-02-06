@@ -13,8 +13,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertCircle, MapPin } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { z } from 'zod';
+import { mapAuthError } from '@/lib/error-messages';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -57,11 +58,7 @@ export default function Auth() {
 
         const { error } = await signIn(email, password);
         if (error) {
-          if (error.message.includes('Invalid login')) {
-            setError('Email o contraseña incorrectos');
-          } else {
-            setError(error.message);
-          }
+          setError(mapAuthError(error, 'signin'));
           setLoading(false);
           return;
         }
@@ -75,19 +72,15 @@ export default function Auth() {
 
         const { error } = await signUp(email, password, fullName, departmentId);
         if (error) {
-          if (error.message.includes('already registered')) {
-            setError('Este email ya está registrado');
-          } else {
-            setError(error.message);
-          }
+          setError(mapAuthError(error, 'signup'));
           setLoading(false);
           return;
         }
       }
 
       navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'Error inesperado');
+    } catch (err: unknown) {
+      setError(mapAuthError(err, isLogin ? 'signin' : 'signup'));
     } finally {
       setLoading(false);
     }
@@ -98,11 +91,13 @@ export default function Auth() {
       <Card className="w-full max-w-md animate-slide-up">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
-              <MapPin className="h-8 w-8 text-primary-foreground" />
-            </div>
+            <img
+              src="/logo-control-asistencia.svg"
+              alt="Control de Asistencia ELINEAS"
+              className="h-20 w-20 rounded-xl object-cover shadow-lg"
+            />
           </div>
-          <CardTitle className="text-2xl">ELINEAS</CardTitle>
+          <CardTitle className="text-2xl">Control de Asistencia ELINEAS</CardTitle>
           <CardDescription>
             {isLogin ? 'Inicia sesión para marcar asistencia' : 'Crea tu cuenta'}
           </CardDescription>
