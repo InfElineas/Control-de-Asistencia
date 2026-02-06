@@ -45,6 +45,23 @@ function getGreeting(now: Date): string {
   return 'Buenas noches';
 }
 
+interface QuickAccessItem {
+  label: string;
+  description: string;
+  icon: ElementType;
+  route: string;
+}
+
+function getMarkBadgeClass(markType: 'IN' | 'OUT'): string {
+  if (markType === 'IN') return 'bg-success';
+  return 'bg-primary';
+}
+
+function getMarkLabel(markType: 'IN' | 'OUT'): string {
+  if (markType === 'IN') return 'Entrada';
+  return 'Salida';
+}
+
 export default function Index() {
   const navigate = useNavigate();
   const { user, profile, role, loading: authLoading } = useAuth();
@@ -222,10 +239,10 @@ export default function Index() {
                     <span className="font-medium">{getMarkLabel(mark.mark_type as MarkType)}</span>
                     <span className="text-muted-foreground">{format(new Date(mark.timestamp), 'HH:mm')}</span>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            )}
+          </>
         )}
 
         {quickAccess.length > 0 && (
