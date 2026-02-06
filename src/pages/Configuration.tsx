@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import type { ComponentProps } from 'react';
 import { useGeofenceConfig } from '@/hooks/useGeofenceConfig';
 import { useDepartmentSchedules } from '@/hooks/useDepartmentSchedules';
+import { supabase } from '@/integrations/supabase/client';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DepartmentScheduleCard } from '@/components/configuration/DepartmentScheduleCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, MapPin, Clock, Settings, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import { mapGenericActionError } from '@/lib/error-messages';
 
 export default function Configuration() {
   const { config, loading, updateConfig } = useGeofenceConfig();
@@ -24,6 +27,11 @@ export default function Configuration() {
     block_on_poor_accuracy: config?.block_on_poor_accuracy ?? true,
   });
   const [saving, setSaving] = useState(false);
+  const [generalConfig, setGeneralConfig] = useState({
+    includeHeadsInGlobalReports: false,
+    lateToleranceMinutes: 15,
+  });
+  const [savingGeneral, setSavingGeneral] = useState(false);
 
   // Update form when config loads
   useEffect(() => {
@@ -38,26 +46,83 @@ export default function Configuration() {
     }
   }, [config]);
 
+
+  useEffect(() => {
+    const fetchGeneralConfig = async () => {
+      const { data, error } = await supabase
+        .from('app_config')
+        .select('key, value')
+        .in('key', ['include_heads_in_global_reports', 'late_tolerance_minutes']);
+
+      if (error) {
+        toast.error(mapGenericActionError(error, 'No se pudo cargar la configuración general.'));
+        return;
+      }
+
+      const includeHeads = data?.find((item) => item.key === 'include_heads_in_global_reports')?.value;
+      const lateTolerance = data?.find((item) => item.key === 'late_tolerance_minutes')?.value;
+
+      setGeneralConfig({
+        includeHeadsInGlobalReports: typeof includeHeads === 'boolean' ? includeHeads : false,
+        lateToleranceMinutes: typeof lateTolerance === 'number' ? lateTolerance : 15,
+      });
+    };
+
+    fetchGeneralConfig();
+  }, []);
+
   const handleSaveGeofence = async () => {
     setSaving(true);
     const { error } = await updateConfig(geofenceForm);
     
     if (error) {
-      toast.error(`Error: ${error}`);
+      toast.error(mapGenericActionError(error, 'No se pudo completar la operación.'));
     } else {
       toast.success('Configuración de geofence guardada');
     }
     setSaving(false);
   };
 
-  const handleSaveSchedule = async (departmentId: string, data: any) => {
+  type ScheduleUpdateData = ComponentProps<typeof DepartmentScheduleCard>['onSave'] extends (departmentId: string, data: infer T) => Promise<{ error: string | null }> ? T : never;
+
+  const handleSaveSchedule = async (departmentId: string, data: ScheduleUpdateData) => {
     const { error } = await updateSchedule(departmentId, data);
     if (error) {
-      toast.error(`Error: ${error}`);
+      toast.error(mapGenericActionError(error, 'No se pudo completar la operación.'));
     } else {
       toast.success('Horario guardado correctamente');
     }
     return { error };
+  };
+
+
+  const handleSaveGeneral = async () => {
+    setSavingGeneral(true);
+
+    try {
+      const updates = [
+        supabase
+          .from('app_config')
+          .update({ value: generalConfig.includeHeadsInGlobalReports })
+          .eq('key', 'include_heads_in_global_reports'),
+        supabase
+          .from('app_config')
+          .update({ value: generalConfig.lateToleranceMinutes })
+          .eq('key', 'late_tolerance_minutes'),
+      ];
+
+      const results = await Promise.all(updates);
+      const failed = results.find((result) => result.error);
+
+      if (failed?.error) {
+        toast.error(mapGenericActionError(failed.error, 'No se pudo guardar la configuración general.'));
+        return;
+      }
+
+      toast.success('Configuración general guardada correctamente');
+    } finally {
+      setSavingGeneral(false);
+    }
   };
 
   if (loading) {
@@ -269,20 +334,44 @@ export default function Configuration() {
                       Por defecto, los jefes de departamento NO aparecen en reportes globales
                     </p>
                   </div>
-                  <Switch defaultChecked={false} />
+                  <Switch
+                    checked={generalConfig.includeHeadsInGlobalReports}
+                    onCheckedChange={(checked) =>
+                      setGeneralConfig((prev) => ({ ...prev, includeHeadsInGlobalReports: checked }))
+                    }
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label>Tolerancia de tardanza (minutos)</Label>
-                  <Input type="number" defaultValue="15" />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={generalConfig.lateToleranceMinutes}
+                    onChange={(e) =>
+                      setGeneralConfig((prev) => ({
+                        ...prev,
+                        lateToleranceMinutes: Number.parseInt(e.target.value || '0', 10),
+                      }))
+                    }
+                  />
                   <p className="text-xs text-muted-foreground">
                     Minutos después de la hora de entrada que se consideran tardanza
                   </p>
                 </div>
 
-                <Button className="w-full">
-                  <Save className="h-4 w-4 mr-2" />
-                  Guardar configuración general
+                <Button className="w-full" onClick={handleSaveGeneral} disabled={savingGeneral}>
+                  {savingGeneral ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Guardar configuración general
+                    </>
+                  )}
                 </Button>
               </CardContent>
             </Card>
