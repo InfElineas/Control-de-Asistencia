@@ -97,6 +97,38 @@ export default function Index() {
         ]
       : [];
 
+  const roleQuickAccess: QuickAccessItem[] = isGlobalManager
+    ? [
+        {
+          label: 'Panel global',
+          description: 'Métricas y consolidado general',
+          icon: Users,
+          route: '/global',
+        },
+        {
+          label: 'Usuarios',
+          description: 'Gestión de cuentas y permisos',
+          icon: UserCog,
+          route: '/users',
+        },
+        {
+          label: 'Configuración',
+          description: 'Reglas y parámetros del sistema',
+          icon: Settings,
+          route: '/configuration',
+        },
+      ]
+    : isDepartmentHead
+      ? [
+          {
+            label: 'Mi departamento',
+            description: 'Supervisión del equipo',
+            icon: Building2,
+            route: '/department',
+          },
+        ]
+      : [];
+
   return (
     <AppLayout>
       <div className="space-y-6 animate-fade-in max-w-6xl mx-auto">
@@ -218,10 +250,10 @@ export default function Index() {
                     <span className="font-medium">{mark.mark_type === 'IN' ? 'Entrada' : 'Salida'}</span>
                     <span className="text-muted-foreground">{format(new Date(mark.timestamp), 'HH:mm')}</span>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            )}
+          </>
         )}
 
         {roleQuickAccess.length > 0 && (
