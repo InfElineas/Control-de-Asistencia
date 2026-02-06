@@ -21,30 +21,6 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-type MarkType = 'IN' | 'OUT';
-
-interface QuickAccessItem {
-  label: string;
-  description: string;
-  icon: ElementType;
-  route: string;
-}
-
-function getMarkBadgeClass(markType: MarkType): string {
-  return markType === 'IN' ? 'bg-success' : 'bg-primary';
-}
-
-function getMarkLabel(markType: MarkType): string {
-  return markType === 'IN' ? 'Entrada' : 'Salida';
-}
-
-function getGreeting(now: Date): string {
-  const hour = now.getHours();
-  if (hour < 12) return 'Buenos días';
-  if (hour < 19) return 'Buenas tardes';
-  return 'Buenas noches';
-}
-
 interface QuickAccessItem {
   label: string;
   description: string;
@@ -53,13 +29,18 @@ interface QuickAccessItem {
 }
 
 function getMarkBadgeClass(markType: 'IN' | 'OUT'): string {
-  if (markType === 'IN') return 'bg-success';
-  return 'bg-primary';
+  return markType === 'IN' ? 'bg-success' : 'bg-primary';
 }
 
 function getMarkLabel(markType: 'IN' | 'OUT'): string {
-  if (markType === 'IN') return 'Entrada';
-  return 'Salida';
+  return markType === 'IN' ? 'Entrada' : 'Salida';
+}
+
+function getGreeting(now: Date): string {
+  const hour = now.getHours();
+  if (hour < 12) return 'Buenos días';
+  if (hour < 19) return 'Buenas tardes';
+  return 'Buenas noches';
 }
 
 export default function Index() {
@@ -235,8 +216,8 @@ export default function Index() {
               <div className="flex flex-wrap gap-3">
                 {todayMarks.map((mark) => (
                   <div key={mark.id} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary">
-                    <span className={cn('w-2 h-2 rounded-full', getMarkBadgeClass(mark.mark_type as MarkType))} />
-                    <span className="font-medium">{getMarkLabel(mark.mark_type as MarkType)}</span>
+                    <span className={cn('w-2 h-2 rounded-full', getMarkBadgeClass(mark.mark_type))} />
+                    <span className="font-medium">{getMarkLabel(mark.mark_type)}</span>
                     <span className="text-muted-foreground">{format(new Date(mark.timestamp), 'HH:mm')}</span>
                   </div>
                 </CardContent>
