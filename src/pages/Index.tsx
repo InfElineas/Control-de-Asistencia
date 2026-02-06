@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAttendance } from '@/hooks/useAttendance';
 import { useRestSchedule } from '@/hooks/useRestSchedule';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Clock,
@@ -28,7 +29,13 @@ interface QuickAccessItem {
 }
 
 function getMarkBadgeClass(markType: 'IN' | 'OUT'): string {
-  return markType === 'IN' ? 'bg-success' : 'bg-primary';
+  if (markType === 'IN') return 'bg-success';
+  return 'bg-primary';
+}
+
+function getMarkLabel(markType: 'IN' | 'OUT'): string {
+  if (markType === 'IN') return 'Entrada';
+  return 'Salida';
 }
 
 export default function Index() {
@@ -64,38 +71,6 @@ export default function Index() {
     if (hour < 19) return 'Buenas tardes';
     return 'Buenas noches';
   })();
-
-  const roleQuickAccess: QuickAccessItem[] = isGlobalManager
-    ? [
-        {
-          label: 'Panel global',
-          description: 'Métricas y consolidado general',
-          icon: Users,
-          route: '/global',
-        },
-        {
-          label: 'Usuarios',
-          description: 'Gestión de cuentas y permisos',
-          icon: UserCog,
-          route: '/users',
-        },
-        {
-          label: 'Configuración',
-          description: 'Reglas y parámetros del sistema',
-          icon: Settings,
-          route: '/configuration',
-        },
-      ]
-    : isDepartmentHead
-      ? [
-          {
-            label: 'Mi departamento',
-            description: 'Supervisión del equipo',
-            icon: Building2,
-            route: '/department',
-          },
-        ]
-      : [];
 
   const roleQuickAccess: QuickAccessItem[] = isGlobalManager
     ? [
@@ -246,8 +221,8 @@ export default function Index() {
               <div className="flex flex-wrap gap-3">
                 {todayMarks.map((mark) => (
                   <div key={mark.id} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary">
-                    <span className={`w-2 h-2 rounded-full ${getMarkBadgeClass(mark.mark_type)}`} />
-                    <span className="font-medium">{mark.mark_type === 'IN' ? 'Entrada' : 'Salida'}</span>
+                    <span className={cn('w-2 h-2 rounded-full', getMarkBadgeClass(mark.mark_type))} />
+                    <span className="font-medium">{getMarkLabel(mark.mark_type)}</span>
                     <span className="text-muted-foreground">{format(new Date(mark.timestamp), 'HH:mm')}</span>
                   </div>
                 </CardContent>
