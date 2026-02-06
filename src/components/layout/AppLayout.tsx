@@ -90,7 +90,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             alt="Control de Asistencia ELINEAS"
             className="h-8 w-8 rounded-md object-cover"
           />
-          <span className="font-semibold text-sm leading-tight">Control de Asistencia ELINEAS</span>
+          <span className="font-semibold text-sm leading-tight">Asistencia ELINEAS</span>
         </div>
         <Button
           variant="ghost"
@@ -134,15 +134,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:fixed lg:left-0 lg:top-0 lg:bottom-0 lg:w-64 bg-card border-r">
-        <div className="p-6 border-b">
+        <div className="p-5 border-b bg-muted/20">
           <div className="flex items-center gap-3">
             <img
               src="/logo-control-asistencia.svg"
               alt="Control de Asistencia ELINEAS"
-              className="h-10 w-10 rounded-lg object-cover"
+              className="h-12 w-12 rounded-lg object-cover shadow-sm"
             />
-            <div>
-              <h1 className="font-bold">Control de Asistencia ELINEAS</h1>
+            <div className="min-w-0">
+              <h1 className="font-bold text-base leading-tight">Control de Asistencia</h1>
+              <p className="text-base leading-tight font-semibold text-primary">ELINEAS</p>
               <p className="text-xs text-muted-foreground">Plataforma de gestión de asistencia</p>
             </div>
           </div>
