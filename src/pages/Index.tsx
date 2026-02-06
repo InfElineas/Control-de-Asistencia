@@ -208,10 +208,10 @@ export default function Index() {
                     <span className="font-medium">{mark.mark_type === 'IN' ? 'Entrada' : 'Salida'}</span>
                     <span className="text-muted-foreground">{format(new Date(mark.timestamp), 'HH:mm')}</span>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            )}
+          </>
         )}
 
         {roleQuickAccess.length > 0 && (
