@@ -9,6 +9,7 @@ import {
   CheckCircle,
   Clock,
   Loader2,
+  PlaneTakeoff,
   Settings,
   UserCog,
   Users,
@@ -71,6 +72,13 @@ export default function Index() {
   const isDepartmentHead = role === 'department_head';
 
   const quickAccess: QuickAccessItem[] = [];
+  quickAccess.push({
+    label: 'Vacaciones',
+    description: 'Solicitudes y saldo acumulado',
+    icon: PlaneTakeoff,
+    route: '/vacations',
+  });
+
   if (isGlobalManager) {
     quickAccess.push(
       {
