@@ -55,7 +55,7 @@ const App = () => (
             <Route
               path="/rest-schedule"
               element={
-                <ProtectedRoute excludedRoles={['global_manager']}>
+                <ProtectedRoute>
                   <RestSchedule />
                 </ProtectedRoute>
               }

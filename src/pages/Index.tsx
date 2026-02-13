@@ -82,6 +82,12 @@ export default function Index() {
   if (isGlobalManager) {
     quickAccess.push(
       {
+        label: 'Descansos del personal',
+        description: 'Configura descansos para trabajadores',
+        icon: Calendar,
+        route: '/rest-schedule',
+      },
+      {
         label: 'Panel global',
         description: 'Métricas y consolidado general',
         icon: Users,
