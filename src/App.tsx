@@ -87,7 +87,7 @@ const App = () => (
             <Route
               path="/vacations"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute excludedRoles={['global_manager']}>
                   <Vacations />
                 </ProtectedRoute>
               }

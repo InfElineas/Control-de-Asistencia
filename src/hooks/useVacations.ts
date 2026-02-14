@@ -48,9 +48,29 @@ export function useVacations() {
   const [error, setError] = useState<string | null>(null);
 
   const canReview = role === 'global_manager' || role === 'department_head';
+  const canRequestPersonalVacations = role !== 'global_manager';
+
+  const mapVacationModuleError = (error: unknown): string => {
+    const message = getErrorMessage(error);
+    const normalized = message.toLowerCase();
+
+    if (
+      normalized.includes('status code 404') ||
+      normalized.includes('vacation_requests') ||
+      normalized.includes('get_vacation_balance') ||
+      normalized.includes('function') && normalized.includes('does not exist')
+    ) {
+      return 'El módulo de vacaciones aún no está desplegado en la base de datos. Ejecuta las migraciones pendientes de Supabase.';
+    }
+
+    return message;
+  };
 
   const fetchBalance = useCallback(async () => {
-    if (!user) return;
+    if (!user || !canRequestPersonalVacations) {
+      setBalance(EMPTY_BALANCE);
+      return;
+    }
 
     const year = new Date().getFullYear();
     const { data, error: rpcError } = await supabase.rpc('get_vacation_balance', {
@@ -75,10 +95,13 @@ export function useVacations() {
       pending_days: Number(row.pending_days ?? 0),
       available_days: Number(row.available_days ?? 0),
     });
-  }, [user]);
+  }, [canRequestPersonalVacations, user]);
 
   const fetchMyRequests = useCallback(async () => {
-    if (!user) return;
+    if (!user || !canRequestPersonalVacations) {
+      setMyRequests([]);
+      return;
+    }
 
     const { data, error: fetchError } = await supabase
       .from('vacation_requests')
@@ -89,7 +112,7 @@ export function useVacations() {
     if (fetchError) throw fetchError;
 
     setMyRequests((data ?? []) as VacationRequest[]);
-  }, [user]);
+  }, [canRequestPersonalVacations, user]);
 
   const fetchReviewQueue = useCallback(async () => {
     if (!canReview) {
@@ -125,7 +148,7 @@ export function useVacations() {
     try {
       await Promise.all([fetchMyRequests(), fetchBalance(), fetchReviewQueue()]);
     } catch (err: unknown) {
-      setError(getErrorMessage(err));
+      setError(mapVacationModuleError(err));
     } finally {
       setLoading(false);
     }
@@ -136,6 +159,10 @@ export function useVacations() {
   }, [refresh]);
 
   const requestVacation = useCallback(async (startDate: string, endDate: string, reason?: string) => {
+    if (!canRequestPersonalVacations) {
+      return { error: 'Los gestores globales no pueden solicitar vacaciones personales.' };
+    }
+
     const { error: rpcError } = await supabase.rpc('request_vacation', {
       _start_date: startDate,
       _end_date: endDate,
@@ -143,12 +170,12 @@ export function useVacations() {
     });
 
     if (rpcError) {
-      return { error: getErrorMessage(rpcError) };
+      return { error: mapVacationModuleError(rpcError) };
     }
 
     await refresh();
     return { error: null };
-  }, [refresh]);
+  }, [canRequestPersonalVacations, refresh]);
 
   const cancelRequest = useCallback(async (requestId: string) => {
     const { error: rpcError } = await supabase.rpc('cancel_vacation_request', {
@@ -195,6 +222,7 @@ export function useVacations() {
     reviewQueue,
     pendingMine,
     canReview,
+    canRequestPersonalVacations,
     requestVacation,
     cancelRequest,
     reviewRequest,
