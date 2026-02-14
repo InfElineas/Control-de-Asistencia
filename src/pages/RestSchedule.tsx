@@ -53,19 +53,33 @@ export default function RestSchedule() {
 
     const fetchWorkers = async () => {
       setLoadingWorkers(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, email')
-        .order('full_name', { ascending: true });
+      const [{ data: profilesData, error: profilesError }, { data: roleData, error: rolesError }] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('user_id, full_name, email')
+          .order('full_name', { ascending: true }),
+        supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'global_manager'),
+      ]);
 
-      if (error) {
-        toast.error(mapGenericActionError(error, 'No se pudo cargar la lista de trabajadores.'));
+      if (profilesError || rolesError) {
+        toast.error(
+          mapGenericActionError(
+            profilesError ?? rolesError,
+            'No se pudo cargar la lista de trabajadores.'
+          )
+        );
         setLoadingWorkers(false);
         return;
       }
 
-      const workers = (data ?? []) as WorkerOption[];
-      const filteredWorkers = workers.filter((worker) => worker.user_id !== user?.id);
+      const workers = (profilesData ?? []) as WorkerOption[];
+      const globalManagerIds = new Set((roleData ?? []).map((item) => item.user_id));
+      const filteredWorkers = workers.filter(
+        (worker) => worker.user_id !== user?.id && !globalManagerIds.has(worker.user_id)
+      );
       setWorkerOptions(filteredWorkers);
 
       if (!selectedUserId && filteredWorkers.length > 0) {

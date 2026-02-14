@@ -53,8 +53,15 @@ export function useVacations() {
   const mapVacationModuleError = (error: unknown): string => {
     const message = getErrorMessage(error);
     const normalized = message.toLowerCase();
+    const status = typeof error === 'object' && error !== null ? (error as { status?: number }).status : undefined;
+    const code = typeof error === 'object' && error !== null ? (error as { code?: string }).code : undefined;
 
     if (
+      status === 404 ||
+      code === 'PGRST202' ||
+      code === '42883' ||
+      normalized === 'ha ocurrido un error inesperado' ||
+      normalized.includes('error http 404') ||
       normalized.includes('status code 404') ||
       normalized.includes('vacation_requests') ||
       normalized.includes('get_vacation_balance') ||
