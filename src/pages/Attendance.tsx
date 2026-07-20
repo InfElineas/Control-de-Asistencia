@@ -399,7 +399,7 @@ export default function Attendance() {
 
         {/* Global Manager Warning */}
         {isGlobalManager && (
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20">
+          <div className="flex items-center gap-3 p-4 rounded bg-destructive/10 border border-destructive/20">
             <ShieldX className="h-6 w-6 text-destructive" />
             <div>
               <p className="font-medium text-destructive">Acceso restringido</p>
@@ -412,7 +412,7 @@ export default function Attendance() {
 
         {/* Schedule Info */}
         {!isGlobalManager && schedule && (
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+          <div className="flex items-center gap-3 p-4 rounded bg-primary/5 border border-primary/20">
             <Clock className="h-5 w-5 text-primary" />
             <div>
               <p className="font-medium text-primary">Horario de entrada</p>
@@ -426,7 +426,7 @@ export default function Attendance() {
 
         {/* No Schedule Warning */}
         {!isGlobalManager && !isLoading && !schedule && (
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-warning/10 border border-warning/20">
+          <div className="flex items-center gap-3 p-4 rounded bg-warning/10 border border-warning/20">
             <AlertCircle className="h-6 w-6 text-warning" />
             <div>
               <p className="font-medium text-warning">Sin horario configurado</p>
@@ -439,7 +439,7 @@ export default function Attendance() {
 
         {/* Rest Day Warning */}
         {isRest && !isGlobalManager && (
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral/10 border border-neutral/20">
+          <div className="flex items-center gap-3 p-4 rounded bg-neutral/10 border border-neutral/20">
             <Calendar className="h-6 w-6 text-neutral" />
             <div>
               <p className="font-medium text-neutral">Día de descanso</p>
@@ -452,7 +452,7 @@ export default function Attendance() {
 
 
         {!isGlobalManager && locations.length > 0 && (
-          <div className="rounded-xl border p-4 space-y-2">
+          <div className="rounded border p-4 space-y-2">
             <p className="text-sm font-medium">Ubicación de trabajo para hoy</p>
             <Select value={activeLocationId ?? ''} onValueChange={setActiveLocation}>
               <SelectTrigger>
@@ -486,7 +486,7 @@ export default function Attendance() {
 
         {/* Warning if outside - only show for non-GMs */}
         {!isGlobalManager && geofenceResult && !geofenceResult.isInside && !isRest && (
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20">
+          <div className="flex items-center gap-3 p-4 rounded bg-destructive/10 border border-destructive/20">
             <AlertCircle className="h-5 w-5 text-destructive" />
             <p className="text-sm text-destructive">
               Debes estar dentro de la zona para marcar asistencia
@@ -496,7 +496,7 @@ export default function Attendance() {
 
         {/* Schedule Warning for Check-in */}
         {!isGlobalManager && canMarkIn && !checkinCheck.allowed && !isRest && schedule && (
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-warning/10 border border-warning/20">
+          <div className="flex items-center gap-3 p-4 rounded bg-warning/10 border border-warning/20">
             <Clock className="h-5 w-5 text-warning" />
             <p className="text-sm text-warning">
               {checkinCheck.message}
@@ -505,7 +505,7 @@ export default function Attendance() {
         )}
 
         {!isGlobalManager && geoError && (
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-warning/10 border border-warning/20">
+          <div className="flex items-center gap-3 p-4 rounded bg-warning/10 border border-warning/20">
             <AlertCircle className="h-5 w-5 text-warning" />
             <p className="text-sm text-warning">
               {geoErrorKind === 'permission_denied' && 'Debes permitir acceso a la ubicación para poder marcar.'}

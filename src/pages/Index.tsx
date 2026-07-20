@@ -339,15 +339,15 @@ export default function Index() {
             <CardTitle>Resumen del día</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-3 gap-2">
-            <div className="rounded-xl bg-secondary p-3">
+            <div className="rounded bg-secondary p-3">
               <p className="text-xs text-muted-foreground">Última salida</p>
               <p className="text-lg font-bold">{outMarks[0] ? format(new Date(outMarks[0].timestamp), 'HH:mm') : '--:--'}</p>
             </div>
-            <div className="rounded-xl bg-secondary p-3">
+            <div className="rounded bg-secondary p-3">
               <p className="text-xs text-muted-foreground">Horario de descanso</p>
               <p className="text-lg font-bold">{isRest ? 'Sí' : 'No'}</p>
             </div>
-            <div className="rounded-xl bg-secondary p-3">
+            <div className="rounded bg-secondary p-3">
               <p className="text-xs text-muted-foreground">Incidencias pendientes</p>
               <p className="text-lg font-bold">{isGlobalManager ? adminStats?.pendingIncidents ?? 0 : 'Ver módulo'}</p>
             </div>
@@ -367,31 +367,31 @@ export default function Index() {
                 </div>
               ) : (
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="rounded-xl bg-secondary p-3">
+                  <div className="rounded bg-secondary p-3">
                     <p className="text-xs text-muted-foreground">Trabajadores</p>
                     <p className="text-lg font-bold">{adminStats?.employees ?? 0}</p>
                   </div>
-                  <div className="rounded-xl bg-secondary p-3">
+                  <div className="rounded bg-secondary p-3">
                     <p className="text-xs text-muted-foreground">Departamentos</p>
                     <p className="text-lg font-bold">{adminStats?.departments ?? 0}</p>
                   </div>
-                  <div className="rounded-xl bg-secondary p-3">
+                  <div className="rounded bg-secondary p-3">
                     <p className="text-xs text-muted-foreground">Marcajes hoy</p>
                     <p className="text-lg font-bold">{adminStats?.todayMarks ?? 0}</p>
                   </div>
-                  <div className="rounded-xl bg-secondary p-3">
+                  <div className="rounded bg-secondary p-3">
                     <p className="text-xs text-muted-foreground">Incidencias pendientes</p>
                     <p className="text-lg font-bold">{adminStats?.pendingIncidents ?? 0}</p>
                   </div>
-                  <div className="rounded-xl bg-secondary p-3">
+                  <div className="rounded bg-secondary p-3">
                     <p className="text-xs text-muted-foreground">Presentes hoy</p>
                     <p className="text-lg font-bold text-success">{adminStats?.presentToday ?? 0}</p>
                   </div>
-                  <div className="rounded-xl bg-secondary p-3">
+                  <div className="rounded bg-secondary p-3">
                     <p className="text-xs text-muted-foreground">Ausentes hoy</p>
                     <p className="text-lg font-bold text-destructive">{adminStats?.absentToday ?? 0}</p>
                   </div>
-                  <div className="rounded-xl bg-secondary p-3">
+                  <div className="rounded bg-secondary p-3">
                     <p className="text-xs text-muted-foreground">Cobertura</p>
                     <p className="text-lg font-bold">{adminStats?.completionRate ?? 0}%</p>
                   </div>

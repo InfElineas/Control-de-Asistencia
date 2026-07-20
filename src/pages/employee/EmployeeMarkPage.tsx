@@ -100,12 +100,12 @@ export function EmployeeMarkPage() {
   };
 
   if (loading || configLoading || scheduleLoading) {
-    return <Skeleton className="h-72 w-full rounded-2xl" />;
+    return <Skeleton className="h-72 w-full rounded" />;
   }
 
   return (
     <div className="space-y-4">
-      <Card className="rounded-2xl border-primary/20">
+      <Card className="rounded border-primary/20">
         <CardHeader>
           <CardTitle className="text-lg">Marcar asistencia</CardTitle>
         </CardHeader>

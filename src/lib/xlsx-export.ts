@@ -26,16 +26,13 @@ const STATUS_CODES: Record<AttendanceStatus, string> = {
   NO_LABORABLE: 'NL',
 };
 
-const SUMMARY_COLUMNS: AttendanceStatus[] = ['PRESENTE', 'TARDE', 'AUSENTE', 'DESCANSO', 'NO_LABORABLE'];
 const SUMMARY_HEADERS = [
   'Presente',
-  'Tarde',
-  'Ausente',
   'Descanso',
-  'No laborable',
+  'Tardanza',
+  'A Justificada',
+  'A Injustificada',
   'Vacaciones',
-  'Aus. justificada',
-  'Aus. no justificada',
 ];
 
 function formatMinutesAsHours(value: number | null): string {
@@ -248,10 +245,14 @@ export function exportAttendanceMatrixXLSX(
         justified_absences: 0,
         unjustified_absences: 0,
       };
-      for (const status of SUMMARY_COLUMNS) {
-        row.push(monthSummary[status]);
-      }
-      row.push(monthSummary.vacations, monthSummary.justified_absences, monthSummary.unjustified_absences);
+      row.push(
+        monthSummary.PRESENTE,
+        monthSummary.DESCANSO,
+        monthSummary.TARDE,
+        monthSummary.justified_absences,
+        monthSummary.unjustified_absences,
+        monthSummary.vacations,
+      );
     }
 
     for (const day of detailMonthDays) {
@@ -281,10 +282,14 @@ export function exportAttendanceMatrixXLSX(
       justified_absences: 0,
       unjustified_absences: 0,
     };
-    for (const status of SUMMARY_COLUMNS) {
-      row.push(detailSummary[status]);
-    }
-    row.push(detailSummary.vacations, detailSummary.justified_absences, detailSummary.unjustified_absences);
+    row.push(
+      detailSummary.PRESENTE,
+      detailSummary.DESCANSO,
+      detailSummary.TARDE,
+      detailSummary.justified_absences,
+      detailSummary.unjustified_absences,
+      detailSummary.vacations,
+    );
 
     rows.push(row);
   }
@@ -296,7 +301,7 @@ export function exportAttendanceMatrixXLSX(
     { wch: 34 },
     ...Array.from({ length: monthKeys.length * SUMMARY_HEADERS.length }, () => ({ wch: 10 })),
     ...Array.from({ length: detailMonthDays.length }, () => ({ wch: 4 })),
-    ...Array.from({ length: SUMMARY_HEADERS.length }, () => ({ wch: 12 })),
+    ...Array.from({ length: SUMMARY_HEADERS.length }, () => ({ wch: 13 })),
   ];
 
   ws['!autofilter'] = {

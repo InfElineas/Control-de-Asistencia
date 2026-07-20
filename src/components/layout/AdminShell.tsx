@@ -51,12 +51,15 @@ const SidebarBrand = memo(function SidebarBrand() {
         <img
           src="/logo-control-asistencia.svg"
           alt="Control de Asistencia ELINEAS"
-          className="h-12 w-12 rounded-lg object-cover shadow-sm"
+          className="h-11 w-11 rounded-xl object-cover"
+          style={{ boxShadow: 'rgba(0,0,0,0.5) 0px 4px 12px 0px' }}
         />
         <div className="min-w-0">
-          <h1 className="font-bold text-base leading-tight">Control de Asistencia</h1>
-          <p className="text-base leading-tight font-semibold text-primary">ELINEAS</p>
-          <p className="text-xs text-muted-foreground">Plataforma de gestión de asistencia</p>
+          <h1 className="font-semibold text-sm leading-tight text-foreground" style={{ fontFamily: 'Inter, sans-serif', letterSpacing: '-0.01em' }}>
+            Control de Asistencia
+          </h1>
+          <p className="text-sm leading-tight font-semibold text-[#85a6e9]">ELINEAS</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Gestión de asistencia</p>
         </div>
       </div>
       <NotificationBell />
@@ -208,16 +211,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             to={item.href}
             onClick={() => setMobileMoreOpen(false)}
             className={cn(
-              'group flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200',
+              'group flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 text-sm',
+              nested && 'pl-4',
               isActive
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : nested
-                  ? 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
-                  : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
+                ? 'bg-secondary text-foreground font-medium'
+                : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
             )}
           >
-            <item.icon className="h-5 w-5 shrink-0 transition-transform group-hover:scale-105" />
-            <span className="text-sm font-medium">{item.label}</span>
+            <item.icon className={cn('h-4 w-4 shrink-0 transition-transform group-hover:scale-105', isActive && 'text-[#85a6e9]')} />
+            <span className="text-sm">{item.label}</span>
             {getBadgeCount(item.href) !== null && (getBadgeCount(item.href) ?? 0) > 0 && (
               <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-semibold text-white">
                 {getBadgeCount(item.href)}
@@ -238,24 +240,24 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         const isGroupActive = group.items.some((item) => item.href === location.pathname);
 
         return (
-          <div key={group.key} className="rounded-xl bg-transparent">
+          <div key={group.key}>
             <button
               type="button"
               onClick={() => toggleGroup(group.key)}
               className={cn(
-                'w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors border-none',
-                isGroupActive ? 'text-primary' : 'text-foreground/90 hover:bg-secondary/40'
+                'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-widest transition-colors border-none',
+                isGroupActive ? 'text-[#85a6e9]' : 'text-muted-foreground/70 hover:text-muted-foreground'
               )}
             >
               <span className="inline-flex items-center gap-2">
-                <group.icon className="h-4 w-4" />
+                <group.icon className="h-3.5 w-3.5" />
                 {group.label}
               </span>
-              <ChevronDown className={cn('h-4 w-4 transition-transform', isExpanded && 'rotate-180')} />
+              <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', isExpanded && 'rotate-180')} />
             </button>
 
             {isExpanded && (
-              <div className="px-2 pb-2 space-y-1">
+              <div className="mt-0.5 space-y-0.5 mb-1">
                 {group.items.map((item) => (
                   <NavLinkItem key={item.href} item={item} nested />
                 ))}
@@ -269,10 +271,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Mobile bottom nav */}
       <div className="lg:hidden fixed bottom-3 left-0 right-0 z-50 px-4">
         {mobileMoreOpen && mobileOverflowItems.length > 0 && (
-          <div className="mx-auto mb-2 max-w-md rounded-2xl border bg-card/95 p-2 shadow-lg backdrop-blur-md">
-            <div className="grid grid-cols-2 gap-1.5">
+          <div
+            className="mx-auto mb-2 max-w-md rounded-xl border border-border bg-card p-2"
+            style={{ boxShadow: 'rgba(0,0,0,0.5) 0px 4px 30px 0px' }}
+          >
+            <div className="grid grid-cols-2 gap-1">
               {mobileOverflowItems.map((item) => {
                 const isActive = location.pathname === item.href;
                 return (
@@ -281,8 +287,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     to={item.href}
                     onClick={() => setMobileMoreOpen(false)}
                     className={cn(
-                      'flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-colors',
-                      isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/60'
+                      'flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium transition-colors',
+                      isActive ? 'bg-secondary text-[#85a6e9]' : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
                     )}
                   >
                     <div className="relative">
@@ -303,7 +309,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   setMobileMoreOpen(false);
                   void signOut();
                 }}
-                className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/60"
+                className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Salir</span>
@@ -312,7 +318,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <div className="mx-auto grid max-w-md grid-cols-6 rounded-2xl border bg-card/95 p-1.5 shadow-lg backdrop-blur-md">
+        <div
+          className="mx-auto grid max-w-md grid-cols-6 rounded-xl border border-border bg-card p-1"
+          style={{ boxShadow: 'rgba(0,0,0,0.5) 0px 4px 30px 0px' }}
+        >
           {mobileVisibleItems.map((item) => {
             const isActive = location.pathname === item.href;
             return (
@@ -320,42 +329,44 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 to={item.href}
                 className={cn(
-                  'flex min-h-14 items-center justify-center rounded-xl text-[11px] font-medium transition-colors',
-                  isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground'
+                  'flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-medium transition-colors',
+                  isActive ? 'text-[#85a6e9]' : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                <div className="relative">
+                <div className={cn('relative rounded-lg p-1.5', isActive && 'bg-secondary')}>
                   <item.icon className="h-4 w-4" />
                   {getBadgeCount(item.href) !== null && (getBadgeCount(item.href) ?? 0) > 0 && (
-                    <span className="absolute -right-2 -top-2 inline-flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-semibold text-white">
+                    <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-semibold text-white">
                       {getBadgeCount(item.href)}
                     </span>
                   )}
                 </div>
-                <span className="sr-only">{item.label}</span>
               </Link>
             );
           })}
           <Link
             to={mobileQuickAction?.href ?? '/'}
             className={cn(
-              'flex min-h-14 items-center justify-center rounded-xl text-[11px] font-medium transition-colors',
-              location.pathname === mobileQuickAction?.href ? 'bg-primary/10 text-primary' : 'text-muted-foreground'
+              'flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-medium transition-colors',
+              location.pathname === mobileQuickAction?.href ? 'text-[#85a6e9]' : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            {mobileQuickAction ? <mobileQuickAction.icon className="h-4 w-4" /> : <Settings className="h-4 w-4" />}
-            <span className="sr-only">{mobileQuickAction?.label ?? 'Acceso'}</span>
+            <div className={cn('rounded-lg p-1.5', location.pathname === mobileQuickAction?.href && 'bg-secondary')}>
+              {mobileQuickAction ? <mobileQuickAction.icon className="h-4 w-4" /> : <Settings className="h-4 w-4" />}
+            </div>
           </Link>
           {mobileOverflowItems.length > 0 && (
             <button
               type="button"
               onClick={() => setMobileMoreOpen((current) => !current)}
               className={cn(
-                'flex min-h-14 items-center justify-center rounded-xl text-[11px] font-medium transition-colors',
-                mobileMoreOpen ? 'bg-primary/10 text-primary' : 'text-muted-foreground'
+                'flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-medium transition-colors',
+                mobileMoreOpen ? 'text-[#85a6e9]' : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <span className="text-base leading-none">{mobileMoreOpen ? '✕' : '☰'}</span>
+              <div className={cn('rounded-lg p-1.5', mobileMoreOpen && 'bg-secondary')}>
+                <span className="text-base leading-none">{mobileMoreOpen ? '✕' : '☰'}</span>
+              </div>
               <span className="sr-only">Más</span>
             </button>
           )}
@@ -363,36 +374,36 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               disabled
-              className="flex min-h-14 items-center justify-center rounded-xl text-[11px] font-medium text-muted-foreground/60"
+              className="flex min-h-14 items-center justify-center rounded-lg text-[11px] font-medium text-muted-foreground/40"
             >
               <span className="text-base leading-none">☰</span>
-              <span className="sr-only">Más</span>
             </button>
           )}
         </div>
       </div>
 
-      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:left-0 lg:top-0 lg:bottom-0 lg:w-72 bg-card/95 backdrop-blur-md border-r overflow-hidden">
-        <div className="p-5 border-b bg-muted/30">
+      {/* Desktop sidebar — Deep Sea elevated surface */}
+      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:left-0 lg:top-0 lg:bottom-0 lg:w-64 bg-card border-r border-border overflow-hidden">
+        <div className="p-5 border-b border-border">
           <SidebarBrand />
         </div>
-        <nav ref={desktopNavRef} className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav ref={desktopNavRef} className="flex-1 p-3 space-y-0.5 overflow-y-auto">
           <NavLinks />
         </nav>
-        <div className="p-4 border-t bg-muted/20 shrink-0">
+        <div className="p-4 border-t border-border shrink-0">
           <div className="mb-3">
-            <p className="font-medium text-sm">{profile?.full_name}</p>
+            <p className="font-medium text-sm text-foreground">{profile?.full_name}</p>
             <p className="text-xs text-muted-foreground capitalize">{role?.replace('_', ' ')}</p>
-            <p className="text-xs text-muted-foreground">Departamento: {departmentName || 'Sin departamento'}</p>
+            <p className="text-xs text-muted-foreground">Dpto: {departmentName || 'Sin departamento'}</p>
           </div>
-          <Button variant="outline" className="w-full" onClick={signOut}>
+          <Button variant="outline" size="sm" className="w-full" onClick={signOut}>
             <LogOut className="h-4 w-4 mr-2" />
             Cerrar sesión
           </Button>
         </div>
       </aside>
 
-      <main className="lg:pl-72 pt-3 pb-20 lg:pb-0 lg:pt-0 min-h-screen">
+      <main className="lg:pl-64 pb-20 lg:pb-0 min-h-screen">
         <div className="p-3 lg:p-6 max-w-[1600px] mx-auto">{children}</div>
       </main>
     </div>

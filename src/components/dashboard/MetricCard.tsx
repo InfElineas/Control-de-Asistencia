@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,7 +18,7 @@ const variantStyles = {
   muted: 'text-muted-foreground',
 };
 
-export function MetricCard({ title, value, subtitle, icon: Icon, variant = 'default' }: MetricCardProps) {
+export const MetricCard = memo(function MetricCard({ title, value, subtitle, icon: Icon, variant = 'default' }: MetricCardProps) {
   return (
     <div className="metric-card">
       <div className="flex items-start justify-between gap-3">
@@ -26,10 +27,10 @@ export function MetricCard({ title, value, subtitle, icon: Icon, variant = 'defa
           <p className={cn('text-2xl md:text-3xl font-bold mt-1', variantStyles[variant])}>{value}</p>
           {subtitle && <p className="text-xs text-muted-foreground mt-1 truncate">{subtitle}</p>}
         </div>
-        <div className={cn('p-2.5 rounded-xl bg-secondary/70 border border-border/60', variantStyles[variant])}>
+        <div className={cn('p-2.5 rounded bg-secondary border border-border', variantStyles[variant])}>
           <Icon className="h-5 w-5" />
         </div>
       </div>
     </div>
   );
-}
+});

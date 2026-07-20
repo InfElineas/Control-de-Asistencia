@@ -99,7 +99,7 @@ export default function GpsDiagnostics() {
               puedes recalcular para mejorar la precisión.
             </p>
 
-            <div className="flex items-center gap-2 rounded-xl border p-3">
+            <div className="flex items-center gap-2 rounded border p-3">
               <Checkbox
                 id="gps-enabled"
                 checked={Boolean(gpsEnabled)}
@@ -120,19 +120,19 @@ export default function GpsDiagnostics() {
             </p>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border p-3">
+              <div className="rounded border p-3">
                 <p className="text-xs text-muted-foreground">Latitud</p>
                 <p className="font-semibold">{formatCoordinate(latitude)}</p>
               </div>
-              <div className="rounded-xl border p-3">
+              <div className="rounded border p-3">
                 <p className="text-xs text-muted-foreground">Longitud</p>
                 <p className="font-semibold">{formatCoordinate(longitude)}</p>
               </div>
-              <div className="rounded-xl border p-3">
+              <div className="rounded border p-3">
                 <p className="text-xs text-muted-foreground">Precisión</p>
                 <p className="font-semibold">{accuracy !== null ? `± ${Math.round(accuracy)} m` : '—'}</p>
               </div>
-              <div className="rounded-xl border p-3">
+              <div className="rounded border p-3">
                 <p className="text-xs text-muted-foreground">Última actualización</p>
                 <p className="font-semibold">
                   {lastUpdatedAt ? lastUpdatedAt.toLocaleTimeString('es-PE') : '—'}
@@ -141,7 +141,7 @@ export default function GpsDiagnostics() {
             </div>
 
             {geofenceResult && (
-              <div className="rounded-xl border p-3">
+              <div className="rounded border p-3">
                 <p className="text-sm font-medium">Estado de zona</p>
                 <p className="text-sm text-muted-foreground">
                   Distancia al centro: <strong>{geofenceResult.distance} m</strong> · Radio permitido:{' '}
@@ -155,7 +155,7 @@ export default function GpsDiagnostics() {
             )}
 
             {error && (
-              <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              <div className="flex items-start gap-2 rounded border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
                 <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>{error}</span>
               </div>

@@ -106,7 +106,7 @@ export function EmployeeIncidentsPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 pb-4">
-      <Card className="overflow-hidden rounded-3xl border-0 bg-gradient-to-r from-[#133A7C] via-[#1E4D92] to-[#2A9BB3] text-white shadow-sm">
+      <Card className="overflow-hidden rounded-md border-0 bg-gradient-to-r from-[#133A7C] via-[#1E4D92] to-[#2A9BB3] text-white shadow-sm">
         <CardContent className="space-y-3 p-5">
           <p className="text-sm/5 text-white/80">Incidencias</p>
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -132,7 +132,7 @@ export function EmployeeIncidentsPage() {
         </Card>
       )}
 
-      <Card className="rounded-3xl border shadow-sm">
+      <Card className="rounded-md border shadow-sm">
         <CardHeader>
           <CardTitle className="text-base">Nueva incidencia</CardTitle>
         </CardHeader>
@@ -165,7 +165,7 @@ export function EmployeeIncidentsPage() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border shadow-sm">
+      <Card className="rounded-md border shadow-sm">
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <CardTitle className="text-base">Mis incidencias</CardTitle>
@@ -200,7 +200,7 @@ export function EmployeeIncidentsPage() {
           )}
 
           {filteredData.map((item) => (
-            <div key={item.id} className={cn('rounded-2xl border p-3 text-sm shadow-sm', getIncidentStatusClasses(item.status).cardClassName)}>
+            <div key={item.id} className={cn('rounded border p-3 text-sm shadow-sm', getIncidentStatusClasses(item.status).cardClassName)}>
               <div className="flex items-center justify-between gap-2">
                 <p className="font-semibold">{getIncidentTypeLabel(item.incident_type)}</p>
                 <Badge variant="outline" className={cn('font-medium', getIncidentStatusClasses(item.status).badgeClassName)}>

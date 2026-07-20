@@ -1,10 +1,11 @@
 import { ReactNode, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth, AppRole } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { isNativeRuntime } from '@/lib/mobile-runtime';
 import { requestBackgroundLocationPermission, requestForegroundLocationPermission } from '@/lib/location-service';
 import { requestNotificationPermission } from '@/lib/notification-permissions';
+import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -14,6 +15,7 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, allowedRoles, excludedRoles }: ProtectedRouteProps) {
   const { user, role, loading } = useAuth();
+  const location = useLocation();
 
   useEffect(() => {
     if (!user || !isNativeRuntime()) return;
@@ -71,5 +73,5 @@ export function ProtectedRoute({ children, allowedRoles, excludedRoles }: Protec
     return <Navigate to="/" replace />;
   }
 
-  return <>{children}</>;
+  return <AppErrorBoundary resetKey={location.key}>{children}</AppErrorBoundary>;
 }

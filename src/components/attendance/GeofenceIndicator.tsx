@@ -21,7 +21,7 @@ export function GeofenceIndicator({
 }: GeofenceIndicatorProps) {
   if (loading) {
     return (
-      <div className="flex items-center gap-3 p-4 rounded-xl bg-secondary animate-pulse">
+      <div className="flex items-center gap-3 p-4 rounded bg-secondary animate-pulse">
         <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
         <span className="text-muted-foreground">Obteniendo ubicación...</span>
       </div>
@@ -30,7 +30,7 @@ export function GeofenceIndicator({
 
   if (error) {
     return (
-      <div className="flex flex-col gap-2 p-4 rounded-xl bg-destructive/10 border border-destructive/20">
+      <div className="flex flex-col gap-2 p-4 rounded bg-destructive/10 border border-destructive/20">
         <div className="flex items-center gap-3">
           <MapPinOff className="h-5 w-5 text-destructive" />
           <span className="text-destructive font-medium">Error de ubicación</span>
@@ -46,7 +46,7 @@ export function GeofenceIndicator({
 
   if (isInside === null) {
     return (
-      <div className="flex flex-col gap-2 p-4 rounded-xl bg-secondary">
+      <div className="flex flex-col gap-2 p-4 rounded bg-secondary">
         <div className="flex items-center gap-3">
           <MapPin className="h-5 w-5 text-muted-foreground" />
           <span className="text-muted-foreground">Ubicación no verificada</span>
@@ -62,7 +62,7 @@ export function GeofenceIndicator({
   return (
     <div
       className={cn(
-        'relative flex flex-col gap-2 p-4 rounded-xl transition-all',
+        'relative flex flex-col gap-2 p-4 rounded transition-all',
         isInside ? 'bg-success/10 border border-success/20' : 'bg-destructive/10 border border-destructive/20'
       )}
     >

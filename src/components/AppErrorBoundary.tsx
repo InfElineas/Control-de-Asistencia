@@ -42,7 +42,7 @@ export class AppErrorBoundary extends Component<Props, State> {
 
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-xl border bg-card p-6 space-y-4 text-center">
+        <div className="max-w-md w-full rounded border bg-card p-6 space-y-4 text-center">
           <h1 className="text-xl font-bold">Ocurrió un problema al cargar la página</h1>
           <p className="text-sm text-muted-foreground">
             Puedes volver al inicio o recargar. Este error ya fue registrado en consola.

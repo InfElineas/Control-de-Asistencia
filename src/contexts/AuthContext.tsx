@@ -35,6 +35,24 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function buildFallbackProfile(user: User): UserProfile {
+  return {
+    id: '',
+    user_id: user.id,
+    email: user.email ?? '',
+    full_name:
+      (typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name) ||
+      user.email ||
+      'Usuario',
+    department_id:
+      (typeof user.user_metadata?.department_id === 'string' && user.user_metadata.department_id) ||
+      '',
+    phone:
+      (typeof user.user_metadata?.phone === 'string' && user.user_metadata.phone) || null,
+    last_connection_at: null,
+  };
+}
+
 function ensureAuthConfig(): string | null {
   if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
     return 'Configuración incompleta de autenticación. Verifica VITE_SUPABASE_URL y VITE_SUPABASE_PUBLISHABLE_KEY.';
@@ -112,24 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (profileError) throw profileError;
-      setProfile(
-        (profileData as UserProfile) || {
-          id: '',
-          user_id: authUser.id,
-          email: authUser.email ?? '',
-          full_name:
-            (typeof authUser.user_metadata?.full_name === 'string' && authUser.user_metadata.full_name) ||
-            authUser.email ||
-            'Usuario',
-          department_id:
-            (typeof authUser.user_metadata?.department_id === 'string' && authUser.user_metadata.department_id) ||
-            '',
-          phone:
-            (typeof authUser.user_metadata?.phone === 'string' && authUser.user_metadata.phone) ||
-            null,
-          last_connection_at: null,
-        }
-      );
+      setProfile((profileData as UserProfile) || buildFallbackProfile(authUser));
 
       void updateLastConnection(authUser.id);
 
@@ -143,24 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setRole(getHighestRole((roleRows ?? []).map((row) => row.role)) as AppRole);
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      setProfile((prevProfile) =>
-        prevProfile || {
-          id: '',
-          user_id: authUser.id,
-          email: authUser.email ?? '',
-          full_name:
-            (typeof authUser.user_metadata?.full_name === 'string' && authUser.user_metadata.full_name) ||
-            authUser.email ||
-            'Usuario',
-          department_id:
-            (typeof authUser.user_metadata?.department_id === 'string' && authUser.user_metadata.department_id) ||
-            '',
-          phone:
-            (typeof authUser.user_metadata?.phone === 'string' && authUser.user_metadata.phone) ||
-            null,
-          last_connection_at: null,
-        }
-      );
+      setProfile((prevProfile) => prevProfile || buildFallbackProfile(authUser));
       setRole((prevRole) => prevRole || 'employee');
     } finally {
       setLoading(false);

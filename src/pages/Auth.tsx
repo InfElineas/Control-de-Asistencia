@@ -48,20 +48,15 @@ export default function Auth() {
   const { signIn, signUp } = useAuth();
   const { departments, loading: deptLoading } = useDepartments();
   const navigate = useNavigate();
-  const fieldClassName = 'h-11 rounded-2xl border-slate-200 bg-white/80 px-4 text-base placeholder:text-slate-400';
+  const fieldClassName = 'h-11 rounded border-slate-200 bg-white px-4 text-base placeholder:text-slate-400';
 
   useEffect(() => {
     if (!nativeRuntime) return;
 
     const storedEmail = window.localStorage.getItem('native-login-email');
-    const storedPassword = window.localStorage.getItem('native-login-password');
 
     if (storedEmail) {
       setEmail(storedEmail);
-    }
-
-    if (storedPassword) {
-      setPassword(storedPassword);
     }
   }, [nativeRuntime]);
 
@@ -93,10 +88,8 @@ export default function Auth() {
 
         if (nativeRuntime && rememberCredentials) {
           window.localStorage.setItem('native-login-email', normalizedEmail);
-          window.localStorage.setItem('native-login-password', password);
         } else if (nativeRuntime) {
           window.localStorage.removeItem('native-login-email');
-          window.localStorage.removeItem('native-login-password');
         }
       } else {
         const normalizedEmail = email.trim().toLowerCase();
@@ -135,13 +128,13 @@ export default function Auth() {
     <div className="relative h-[100dvh] flex items-center justify-center overflow-hidden p-3 sm:p-4">
       <div className="absolute inset-0 bg-gradient-to-b from-[#173B72] via-[#2A59A1] to-[#61B5E4]" />
       <div className="pointer-events-none absolute inset-0 opacity-70" style={{ backgroundImage: 'radial-gradient(circle at 20% 85%, rgba(255,255,255,0.5) 1px, transparent 2px), radial-gradient(circle at 80% 75%, rgba(255,255,255,0.45) 1px, transparent 2px)', backgroundSize: '28px 28px' }} />
-      <Card className="relative z-10 w-full max-w-[500px] animate-slide-up rounded-[2.1rem] border border-white/20 bg-gradient-to-b from-[#f4f6fd]/95 via-[#f5f8ff]/95 to-[#eff3ff]/95 shadow-[0_20px_60px_rgba(18,56,125,0.45)]">
+      <Card className="relative z-10 w-full max-w-[500px] animate-slide-up rounded-md border border-white/20 bg-[#f4f6fd] shadow-[0_8px_40px_rgba(18,56,125,0.35)]">
         <CardHeader className="text-center pt-6 pb-2">
           <div className="flex justify-center mb-3">
             <img
               src="/logo-control-asistencia.svg"
               alt="Control de Asistencia ELINEAS"
-              className="h-20 w-20 rounded-2xl bg-black p-2 object-contain shadow-lg"
+              className="h-20 w-20 rounded bg-black p-2 object-contain shadow-sm"
             />
           </div>
           <CardTitle className="text-[clamp(1.8rem,4.5vw,2.6rem)] leading-tight text-slate-800">Control de Asistencia ELINEAS</CardTitle>
@@ -281,7 +274,7 @@ export default function Auth() {
 
             <Button
               type="submit"
-              className="w-full h-11 rounded-2xl bg-[#1D3F75] text-xl font-semibold hover:bg-[#183664]"
+              className="w-full h-11 rounded bg-[#1D3F75] text-xl font-semibold hover:bg-[#183664]"
               disabled={loading}
             >
               {loading ? (

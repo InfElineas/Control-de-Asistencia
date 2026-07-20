@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { cn } from '@/lib/utils';
 
 type Status = 'PRESENTE' | 'TARDE' | 'AUSENTE' | 'DESCANSO' | 'NO_LABORABLE';
@@ -15,8 +16,8 @@ const statusConfig: Record<Status, { label: string; className: string }> = {
   NO_LABORABLE: { label: 'No laborable', className: 'status-nonworking' },
 };
 
-export function StatusBadge({ status, className }: StatusBadgeProps) {
+export const StatusBadge = memo(function StatusBadge({ status, className }: StatusBadgeProps) {
   const config = statusConfig[status];
 
   return <span className={cn('status-badge shadow-sm border border-transparent', config.className, className)}>{config.label}</span>;
-}
+});

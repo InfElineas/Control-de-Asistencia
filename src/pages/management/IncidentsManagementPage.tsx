@@ -228,7 +228,7 @@ export function IncidentsManagementPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-4 pb-4">
-      <Card className="overflow-hidden rounded-3xl border-0 bg-gradient-to-r from-[#133A7C] via-[#1E4D92] to-[#2A9BB3] text-white shadow-sm">
+      <Card className="overflow-hidden rounded-md border-0 bg-gradient-to-r from-[#133A7C] via-[#1E4D92] to-[#2A9BB3] text-white shadow-sm">
         <CardContent className="space-y-3 p-5">
           <p className="text-sm/5 text-white/80">Gestión de incidencias</p>
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -243,7 +243,7 @@ export function IncidentsManagementPage() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border shadow-sm">
+      <Card className="rounded-md border shadow-sm">
         <CardHeader>
           <CardTitle className="text-base">Registrar incidencia a un trabajador</CardTitle>
         </CardHeader>
@@ -294,7 +294,7 @@ export function IncidentsManagementPage() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border shadow-sm">
+      <Card className="rounded-md border shadow-sm">
         <CardHeader>
           <div className="flex items-center justify-between gap-2">
             <CardTitle className="text-base">Bandeja de incidencias</CardTitle>
@@ -306,15 +306,15 @@ export function IncidentsManagementPage() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-2xl border bg-muted/30 p-3">
+            <div className="rounded border bg-muted/30 p-3">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Rol revisor</p>
               <p className="font-semibold text-foreground">{role?.replace('_', ' ')}</p>
             </div>
-            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3">
+            <div className="rounded border border-amber-500/30 bg-amber-500/10 p-3">
               <p className="text-xs uppercase tracking-wide text-amber-700 dark:text-amber-300">Pendientes</p>
               <p className="font-semibold text-foreground">{pendingCount}</p>
             </div>
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 sm:col-span-2 lg:col-span-1">
+            <div className="rounded border border-emerald-500/30 bg-emerald-500/10 p-3 sm:col-span-2 lg:col-span-1">
               <p className="text-xs uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Total visibles</p>
               <p className="font-semibold text-foreground">{filteredData.length}</p>
             </div>
@@ -340,13 +340,13 @@ export function IncidentsManagementPage() {
       {isError && <p className="text-sm text-destructive">{buildIncidentErrorMessage(error)}</p>}
 
       {!isLoading && !isError && filteredData.length === 0 && (
-        <Card className="rounded-3xl border shadow-sm">
+        <Card className="rounded-md border shadow-sm">
           <CardContent className="pt-6 text-sm text-muted-foreground">No hay incidencias para el filtro actual.</CardContent>
         </Card>
       )}
 
       {filteredData.length > 0 && (
-        <Card className="rounded-3xl border shadow-sm">
+        <Card className="rounded-md border shadow-sm">
           <CardContent className="p-0">
             <ul className="divide-y">
               {filteredData.map((item) => (

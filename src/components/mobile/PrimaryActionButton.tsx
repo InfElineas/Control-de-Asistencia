@@ -13,7 +13,7 @@ export function PrimaryActionButton({
 }) {
   return (
     <Button
-      className="h-16 w-full rounded-2xl text-base font-bold tracking-wide shadow-md"
+      className="h-14 w-full rounded text-base font-bold tracking-wide shadow-sm"
       onClick={onClick}
       disabled={disabled || loading}
     >
