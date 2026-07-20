@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { getHighestRole } from '@/lib/roles';
 import { resolveAuthRedirectUrl } from '@/lib/auth-redirect';
+import type { Json } from '@/integrations/supabase/types';
 import * as XLSX from 'xlsx';
 
 export type AuditLog = {
@@ -106,7 +107,7 @@ export function useSuperAdmin() {
         action,
         table_name: 'system',
         description: details,
-        metadata: metadata || {},
+        metadata: (metadata || {}) as Json,
       });
     } catch (logError) {
       console.error('Failed to persist audit error log', logError);

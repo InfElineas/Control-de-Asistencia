@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { format, subDays, startOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
+import type { AppRole } from '@/contexts/AuthContext';
 import { useDepartments } from '@/hooks/useDepartments';
 import { calculateLateMinutes } from '@/lib/attendance-metrics';
 import { exportAttendanceMatrixXLSX, type AttendanceReportRow } from '@/lib/xlsx-export';
@@ -153,7 +154,7 @@ export function useAttendanceSummary() {
     );
 
     if (profilesData) {
-      const rolesToExclude = includeHeads
+      const rolesToExclude: AppRole[] = includeHeads
         ? ['global_manager', 'superadmin']
         : ['department_head', 'global_manager', 'superadmin'];
 
@@ -275,7 +276,7 @@ export function useAttendanceSummary() {
       const { data: reportData, error: reportError } = await supabase.rpc('get_attendance_report_monthly', {
         _from: dateRange.from,
         _to: dateRange.to,
-        _department_id: departmentId,
+        _department_id: departmentId ?? undefined,
         _scope: reportScope,
         _include_heads: includeHeadsInGlobalReports,
       });

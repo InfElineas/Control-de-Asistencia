@@ -53,7 +53,7 @@ export function ReportRunsCard({ scope, departmentId = null, title = 'Reportes g
     const { data: kpiData } = await supabase.rpc('get_report_runs_operational_kpis_v2', {
       _from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
       _scope: scope,
-      _department_id: scope === 'department' ? departmentId : null,
+      _department_id: scope === 'department' ? departmentId ?? undefined : undefined,
     });
     if (Array.isArray(kpiData) && kpiData[0]) {
       setKpis(kpiData[0] as ReportRunKpis);

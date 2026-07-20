@@ -35,8 +35,7 @@ const getCurrentTimeInTimezone = (timezone: string): string =>
   });
 
 export default function Attendance() {
-  const { profile } = useAuth();
-  const role = profile?.role ?? null;
+  const { profile, role } = useAuth();
   const { createNotification } = useNotifications();
   const { isRestDay } = useRestSchedule();
   const { config, loading: configLoading } = useGeofenceConfig();

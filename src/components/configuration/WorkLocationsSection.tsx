@@ -32,7 +32,7 @@ export function WorkLocationsSection({
 }: Props) {
   const locationForm = editingLocation ?? newLocation;
 
-  const handleChange = (field: keyof NewLocation, value: string | number | boolean) => {
+  const handleChange = (field: keyof NewLocation | 'is_active', value: string | number | boolean) => {
     if (editingLocation) {
       setEditingLocation({ ...editingLocation, [field]: value });
     } else {

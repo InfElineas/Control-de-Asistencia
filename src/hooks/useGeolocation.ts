@@ -169,7 +169,7 @@ export function useGeolocation() {
           : 'Debes habilitar ubicación en segundo plano para la salida automática.',
         backgroundTrackingActive: false,
       }));
-      return (bgRequestResult.blocked ? 'permission_blocked' : 'background_not_granted') as const;
+      return bgRequestResult.blocked ? ('permission_blocked' as const) : ('background_not_granted' as const);
     }
 
     const trackingStatus = await startBackgroundLocationTracking((point) => {

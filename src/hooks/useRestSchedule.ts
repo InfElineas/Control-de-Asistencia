@@ -240,12 +240,12 @@ export function useRestSchedule(targetUserId?: string | null) {
 
     const validation = validateRestDaysSeparation(daysOfWeek);
     if (!validation.valid) {
-      return { error: validation.error };
+      return { error: validation.error ?? null };
     }
 
     const workedDayValidation = await hasWorkedOnSelectedRestDay(daysOfWeek, effectiveFrom);
     if (!workedDayValidation.valid) {
-      return { error: workedDayValidation.error };
+      return { error: workedDayValidation.error ?? null };
     }
 
     try {
@@ -285,7 +285,7 @@ export function useRestSchedule(targetUserId?: string | null) {
 
       const workedDayValidation = await hasWorkedOnSelectedRestDay(selectedGroup.days_of_week, effectiveFrom);
       if (!workedDayValidation.valid) {
-        return { error: workedDayValidation.error };
+        return { error: workedDayValidation.error ?? null };
       }
 
       const { error } = await supabase

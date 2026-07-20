@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { exportToXLSX, formatTime } from '@/lib/xlsx-export';
+import { exportToXLSX, formatTime, type AttendanceReportRow } from '@/lib/xlsx-export';
 import { toast } from 'sonner';
 import { calculateLateMinutes } from '@/lib/attendance-metrics';
 import { useManagedDepartments } from '@/hooks/useManagedDepartments';

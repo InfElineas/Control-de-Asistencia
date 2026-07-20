@@ -173,7 +173,7 @@ export function useVacations() {
     const { error: rpcError } = await supabase.rpc('request_vacation', {
       _start_date: startDate,
       _end_date: endDate,
-      _reason: reason?.trim() || null,
+      _reason: reason?.trim() || undefined,
     });
 
     if (rpcError) {
@@ -205,7 +205,7 @@ export function useVacations() {
     const { error: rpcError } = await supabase.rpc('review_vacation_request', {
       _request_id: requestId,
       _decision: decision,
-      _review_comment: reviewComment?.trim() || null,
+      _review_comment: reviewComment?.trim() || undefined,
     });
 
     if (rpcError) {
