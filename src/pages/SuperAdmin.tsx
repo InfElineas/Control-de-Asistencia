@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertTriangle, Database, FileSpreadsheet, Mail, Play, RefreshCcw, ShieldCheck, Trash2, Users, Wrench } from 'lucide-react';
 import { useSuperAdmin, CheckoutMode } from '@/hooks/useSuperAdmin';
+import { AppReleasesSection } from '@/components/superadmin/AppReleasesSection';
 
 export default function SuperAdmin() {
   const { role, user } = useAuth();
@@ -112,6 +113,8 @@ export default function SuperAdmin() {
             </div>
           </CardContent>
         </Card>
+
+        <AppReleasesSection />
 
         <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
           <Card>

@@ -24,6 +24,7 @@ import SuperAdmin from "./pages/SuperAdmin";
 import NotFound from "./pages/NotFound";
 import NotificationsPage from "./pages/Notifications";
 import GpsDiagnostics from "./pages/GpsDiagnostics";
+import DownloadApp from "./pages/DownloadApp";
 import { isNativeRuntime } from '@/lib/mobile-runtime';
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <AppRouterBoundary>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/descargar-app" element={<DownloadApp />} />
             <Route
               path="/"
               element={

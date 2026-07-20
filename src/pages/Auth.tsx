@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDepartments } from '@/hooks/useDepartments';
 import { Button } from '@/components/ui/button';
@@ -304,6 +304,14 @@ export default function Auth() {
               {isLogin ? 'Regístrate' : 'Inicia sesión'}
             </button>
           </div>
+
+          {!nativeRuntime && (
+            <div className="mt-2 text-center text-sm">
+              <Link to="/descargar-app" className="text-slate-500 hover:underline">
+                ¿Usas Android? Descarga la app aquí
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

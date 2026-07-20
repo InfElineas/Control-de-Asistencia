@@ -114,6 +114,39 @@ export type Database = {
         }
         Relationships: []
       }
+      app_releases: {
+        Row: {
+          apk_path: string
+          created_at: string
+          created_by: string | null
+          file_size_bytes: number | null
+          id: string
+          release_notes: string | null
+          version_code: number
+          version_name: string
+        }
+        Insert: {
+          apk_path: string
+          created_at?: string
+          created_by?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          release_notes?: string | null
+          version_code: number
+          version_name: string
+        }
+        Update: {
+          apk_path?: string
+          created_at?: string
+          created_by?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          release_notes?: string | null
+          version_code?: number
+          version_name?: string
+        }
+        Relationships: []
+      }
       app_users: {
         Row: {
           avatar_url: string | null
