@@ -21,6 +21,7 @@ import Vacations from "./pages/Vacations";
 import Profile from "./pages/Profile";
 import Incidents from "./pages/Incidents";
 import SuperAdmin from "./pages/SuperAdmin";
+import PayrollAdjustments from "./pages/PayrollAdjustments";
 import NotFound from "./pages/NotFound";
 import NotificationsPage from "./pages/Notifications";
 import GpsDiagnostics from "./pages/GpsDiagnostics";
@@ -127,6 +128,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={["superadmin"]}>
                   <SuperAdmin />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/nomina"
+              element={
+                <ProtectedRoute allowedRoles={["global_manager", "superadmin"]}>
+                  <PayrollAdjustments />
                 </ProtectedRoute>
               }
             />

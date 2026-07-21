@@ -913,6 +913,51 @@ export type Database = {
         }
         Relationships: []
       }
+      payroll_adjustments: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          reason: string | null
+          reverted_at: string | null
+          reverted_by: string | null
+          source_id: string | null
+          source_type: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string | null
+          reverted_at?: string | null
+          reverted_by?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string | null
+          reverted_at?: string | null
+          reverted_by?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           contract_cancelled_at: string | null
@@ -926,6 +971,7 @@ export type Database = {
           id: string
           is_active: boolean
           last_connection_at: string | null
+          monthly_salary: number | null
           phone: string | null
           updated_at: string
           user_id: string
@@ -942,6 +988,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_connection_at?: string | null
+          monthly_salary?: number | null
           phone?: string | null
           updated_at?: string
           user_id: string
@@ -958,6 +1005,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_connection_at?: string | null
+          monthly_salary?: number | null
           phone?: string | null
           updated_at?: string
           user_id?: string

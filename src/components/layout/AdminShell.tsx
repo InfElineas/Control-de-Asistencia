@@ -18,6 +18,7 @@ import {
   ChevronDown,
   FolderKanban,
   Briefcase,
+  DollarSign,
 } from 'lucide-react';
 import { memo, useEffect, useRef, useState } from 'react';
 import { useAuth, AppRole } from '@/contexts/AuthContext';
@@ -83,6 +84,7 @@ const navItems: NavItem[] = [
   { href: '/users', label: 'Usuarios', icon: UserCog, roles: ['global_manager', 'superadmin'] },
   { href: '/departments-admin', label: 'Departamentos', icon: Building2, roles: ['global_manager', 'superadmin'] },
   { href: '/configuration', label: 'Configuración', icon: Settings, roles: ['global_manager', 'superadmin'] },
+  { href: '/nomina', label: 'Ajustes de nómina', icon: DollarSign, roles: ['global_manager', 'superadmin'] },
   { href: '/superadmin', label: 'Superadmin', icon: ShieldCheck, roles: ['superadmin'] },
 ];
 
@@ -128,7 +130,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       label: 'Gestión',
       icon: FolderKanban,
       items: filteredNavItems.filter((item) =>
-        ['/department', '/global', '/users', '/departments-admin', '/configuration', '/superadmin'].includes(item.href)
+        ['/department', '/global', '/users', '/departments-admin', '/configuration', '/nomina', '/superadmin'].includes(item.href)
       ),
     },
   ].filter((group) => group.items.length > 0);
