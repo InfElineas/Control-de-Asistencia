@@ -4,19 +4,22 @@
 **Alcance:** inventario completo de `src/` y `supabase/`, estado del working tree (cambios sin commitear) y contraste con la documentación ya existente en `docs/`.
 **Complementa, no reemplaza:** `CLAUDE.md` (arquitectura de alto nivel) y `docs/revision-historial-commits.md` (historial de commits hasta 2026-03-29). Este documento cubre lo que falta: inventario granular, estado del refactor en curso, y una lista de acciones concretas derivadas del análisis.
 
+> **Actualización 2026-07-20 (mismo día):** todos los bloqueantes de la sección 6 original (puntos 1-4) fueron corregidos, commiteados y pusheados a `main`. La sección 1 y la tabla de la sección 3 quedan como bitácora de lo que se encontró y cómo se resolvió; la lista de acciones en la sección 6 se actualizó para reflejar el estado real.
+
 ---
 
 ## 1) Resumen ejecutivo
 
-El repo está en medio de un **refactor grande sin commitear** (32 archivos modificados, 3 nuevos hooks + 2 nuevos componentes, un endurecimiento de `tsconfig`, y un re-theming completo de la UI). Verificé el estado real compilando con la config nueva y corriendo lint:
+El repo estaba en medio de un **refactor grande sin commitear** (32 archivos modificados, 3 nuevos hooks + 2 nuevos componentes, un endurecimiento de `tsconfig`, y un re-theming completo de la UI). Se verificó el estado real compilando con la config nueva y corriendo lint, y luego se corrigió todo en tres commits sobre `main`:
 
-- **`tsc --noEmit` falla con ~25 errores** repartidos entre archivos tocados por el refactor y archivos **no tocados** (`Department.tsx`, `RestSchedule.tsx`, `useVacations.ts`, `useGeolocation.ts`, `types.ts`). Activar `noImplicitAny`/`strictNullChecks` en `tsconfig.json`/`tsconfig.app.json` destapó deuda de tipos preexistente en todo el proyecto, no solo en los archivos nuevos.
-- **Hay un bug real (no solo de tipado) introducido por el refactor**: en [UserManagement.tsx:325](src/pages/UserManagement.tsx#L325) se llama a `setSelectedManagedDepartments`, pero el destructuring del hook en la línea 61 no lo incluye — el hook sí lo exporta (`useUserManagement.ts:471`). Seleccionar un departamento principal en el diálogo de edición de usuario lanza `ReferenceError` en runtime.
-- **`npm run lint` falla** (exit ≠ 0): 2 errores `@typescript-eslint/no-explicit-any` en `useAttendanceSummary.ts:312,318` (archivo nuevo).
-- El resto del refactor (extracción página→hook) está **completo y limpio**: no hay imports muertos ni lógica duplicada entre las páginas viejas y los hooks nuevos.
-- `docs/plan-implementacion-vacaciones.md` describe un módulo de vacaciones **como plan futuro**, pero ya está implementado en el código actual (`useVacations.ts`, migraciones `20260214*`–`20260217*`, RPCs `request_vacation`/`review_vacation_request`/`get_vacation_balance`). Ese doc quedó desactualizado y debería archivarse o marcarse como "implementado".
+- **`tsc --noEmit` fallaba con ~25 errores**, repartidos entre archivos tocados por el refactor y archivos **no tocados** (`Department.tsx`, `RestSchedule.tsx`, `useVacations.ts`, `useGeolocation.ts`, `types.ts`). Activar `noImplicitAny`/`strictNullChecks` destapó deuda de tipos preexistente en todo el proyecto. **Resuelto** (commit `239134a`): 0 errores.
+- **Había un bug real (no solo de tipado)** introducido por el refactor: [UserManagement.tsx:325](src/pages/UserManagement.tsx#L325) llamaba a `setSelectedManagedDepartments` sin haberlo desestructurado del hook. **Corregido** (commit `8c415c1`).
+- **`npm run lint` fallaba** (exit ≠ 0): 2 errores `@typescript-eslint/no-explicit-any` en `useAttendanceSummary.ts:312,318`. **Corregido** en el mismo commit `8c415c1` — 0 errores, solo queda el warning preexistente de `AuthContext.tsx:121`.
+- El resto del refactor (extracción página→hook) estaba **completo y limpio**: no había imports muertos ni lógica duplicada entre las páginas viejas y los hooks nuevos.
+- **Hallazgo adicional al arreglar tsc**: buena parte de los errores de tipos no eran solo deuda de tipado — la causa raíz eran **dos migraciones SQL que existían en el repo pero nunca se habían aplicado a la base remota** (`20260424101500_reporting_kpis_scope_filters.sql` y `20260707140000_add_google_sheets_report_config.sql`, esta última parte de este mismo refactor). Se pushearon ambas al proyecto Supabase (`bogguolwffhdlusudgoh`, con confirmación previa del usuario) y se regeneró `src/integrations/supabase/types.ts` desde el esquema remoto ya completo, lo que resolvió los identificadores duplicados y las firmas de RPC obsoletas de una sola vez (commit `239134a`).
+- `docs/plan-implementacion-vacaciones.md` describe un módulo de vacaciones **como plan futuro**, pero ya está implementado en el código actual (`useVacations.ts`, migraciones `20260214*`–`20260217*`, RPCs `request_vacation`/`review_vacation_request`/`get_vacation_balance`). Ese doc sigue desactualizado — ver sección 6, punto 5 (aún abierto).
 
-**Conclusión:** el refactor no está listo para commitear. Antes de continuar, hay que decidir si el endurecimiento de `tsconfig` se hace en este mismo cambio (y entonces hay que arreglar los ~25 errores de tipos en todo el repo) o se separa en un commit propio incremental. Ver sección 6 para el plan de acción.
+**Conclusión:** el refactor ya está commiteado y pusheado a `main` (`8c415c1` → `923b199` → `239134a`), con `tsc --noEmit`, `npm run lint`, `npm run test` y `npm run build` en verde. Quedan pendientes solo los ítems no bloqueantes de la sección 6.
 
 ---
 
@@ -56,7 +59,7 @@ Solo 4 archivos: `example.test.ts` (smoke), `incidents-utils.test.ts`, `ui-mode.
 
 ---
 
-## 3) Estado del working tree (refactor sin commitear)
+## 3) Refactor commiteado (estado final tras la corrección)
 
 **Patrón:** extract-to-hooks sistemático. Cada página grande de admin (`Configuration`, `GlobalPanel`, `SuperAdmin`, `UserManagement`) pasó a ser un componente "tonto" que destructura un hook custom y renderiza JSX; toda la lógica de fetch/estado/handlers se movió a `src/hooks/`. En paralelo, dos secciones de `Configuration.tsx` se extrajeron a componentes propios (`WorkLocationsSection`, `ImportHistorySection`).
 
@@ -74,9 +77,9 @@ Solo 4 archivos: `example.test.ts` (smoke), `incidents-utils.test.ts`, `ui-mode.
 
 | Comando | Resultado |
 |---|---|
-| `npx tsc --noEmit -p tsconfig.app.json` | **Falla**, ~25 errores. Mezcla de: (a) deuda preexistente destapada por `strictNullChecks`/`noImplicitAny` en archivos *no tocados* por el refactor (`Department.tsx`, `RestSchedule.tsx`, `useVacations.ts`, `useGeolocation.ts`, `ReportRunsCard.tsx`, duplicados en `types.ts` — línea 533/704 `vacation_requests` duplicado, 821/825/837/838 `get_vacation_accrual_rate`/`get_vacation_balance` duplicados); (b) 1 bug real de refactor (ver abajo); (c) tipado flojo en RPCs sin genéricos (`supabase.rpc(...)` sin tipar el nombre de función devuelve error de "argument not assignable" porque el string literal no está en el union de RPCs conocidos — afecta `useAttendanceSummary`, `Department.tsx`, `ReportRunsCard.tsx`). |
-| **Bug real** | [UserManagement.tsx:325](src/pages/UserManagement.tsx#L325) llama `setSelectedManagedDepartments` sin haberlo desestructurado del hook (línea 61 solo trae `selectedManagedDepartments`). Rompe en runtime al elegir departamento principal en el diálogo de edición. |
-| `npm run lint` | **Falla**, 2 errores `no-explicit-any` en `useAttendanceSummary.ts:312,318` + 1 warning preexistente de `react-hooks/exhaustive-deps` en `AuthContext.tsx:121`. |
+| `npx tsc --noEmit -p tsconfig.app.json` | Fallaba con ~25 errores (ver detalle abajo). **Ahora pasa con 0 errores** tras desplegar las 2 migraciones pendientes + regenerar `types.ts` + los fixes puntuales de tipos (commit `239134a`). Causas originales: (a) deuda preexistente destapada por `strictNullChecks`/`noImplicitAny` en archivos *no tocados* por el refactor (`Department.tsx`, `RestSchedule.tsx`, `useVacations.ts`, `useGeolocation.ts`); (b) identificadores duplicados en `types.ts` porque dos migraciones locales nunca se habían pusheado a la BD remota; (c) tipado flojo en llamadas RPC cuyo nombre/argumentos no existían aún en el esquema remoto. |
+| **Bug real** | [UserManagement.tsx:325](src/pages/UserManagement.tsx#L325) llamaba `setSelectedManagedDepartments` sin haberlo desestructurado del hook (línea 61 solo traía `selectedManagedDepartments`). **Corregido** (commit `8c415c1`). |
+| `npm run lint` | Fallaba con 2 errores `no-explicit-any` en `useAttendanceSummary.ts:312,318`. **Ahora pasa con 0 errores** (commit `8c415c1`); solo queda el warning preexistente de `react-hooks/exhaustive-deps` en `AuthContext.tsx:121`. |
 
 ---
 
@@ -95,6 +98,8 @@ Solo 4 archivos: `example.test.ts` (smoke), `incidents-utils.test.ts`, `ui-mode.
 10. **Misceláneos posteriores** (`20260325`–`20260424`): `last_connection`, desactivación de perfiles, fixes de RLS multi-departamento.
 11. **Google Sheets** (`20260707140000`): config de spreadsheet ID.
 
+> **Nota de despliegue (2026-07-20):** al momento del análisis inicial, las migraciones 10 (`20260424101500`, KPI v2) y 11 (`20260707140000`, Google Sheets) existían solo en el repo — `supabase migration list --linked` las mostraba sin aplicar en remoto. Se pushearon ambas (`supabase db push --linked`) durante la corrección de los errores de `tsc`; el resto de la lista ya estaba aplicado en remoto.
+
 ### Edge Functions (7 + 1 nueva)
 `create-user`, `delete-user`, `generate-monthly-report`, `import-attendance-history`, `reset-user-password`, `snapshot-daily-facts`, `validate-attendance`, y la nueva `export-report-to-sheet`. Solo 4 están en `config.toml` con `verify_jwt=false` (`create-user`, `validate-attendance`, `generate-monthly-report`, `delete-user`); el resto usa verificación JWT por defecto de Supabase, incluida `export-report-to-sheet`.
 
@@ -112,11 +117,11 @@ Solo 4 archivos: `example.test.ts` (smoke), `incidents-utils.test.ts`, `ui-mode.
 
 ## 6) Acciones recomendadas (derivadas de este análisis)
 
-**Bloqueantes antes de commitear el refactor actual:**
-1. Arreglar el bug real en [UserManagement.tsx:61](src/pages/UserManagement.tsx#L61): agregar `setSelectedManagedDepartments` al destructuring de `useUserManagement()`.
-2. Corregir los 2 `no-explicit-any` en `useAttendanceSummary.ts:312,318` para que `npm run lint` pase.
-3. Decidir el alcance del endurecimiento de `tsconfig`: o se arregla toda la deuda de tipos que destapa en archivos no tocados (`Department.tsx`, `RestSchedule.tsx`, `useVacations.ts`, `useGeolocation.ts`, duplicados en `types.ts`), o se revierte el cambio de `tsconfig` a este PR y se hace en un commit incremental dedicado con su propia limpieza.
-4. Los duplicados de identificadores en `src/integrations/supabase/types.ts` (`vacation_requests`, `get_vacation_accrual_rate`, `get_vacation_balance`) sugieren que el archivo generado quedó desincronizado — regenerar con el CLI de Supabase en vez de tocarlo a mano.
+**Bloqueantes originales — todos resueltos y en `main` (commits `8c415c1`, `923b199`, `239134a`):**
+1. ~~Arreglar el bug real en [UserManagement.tsx:61](src/pages/UserManagement.tsx#L61)~~ — **hecho**, se agregó `setSelectedManagedDepartments` al destructuring de `useUserManagement()`.
+2. ~~Corregir los 2 `no-explicit-any` en `useAttendanceSummary.ts:312,318`~~ — **hecho**, casteados a los tipos concretos `AttendanceReportRow['status']` / `AttendanceReportRow['absence_justification']`.
+3. ~~Decidir el alcance del endurecimiento de `tsconfig`~~ — **hecho**: se mantuvo el endurecimiento y se arregló toda la deuda de tipos que destapaba, incluyendo archivos no tocados por el refactor original (`Department.tsx`, `RestSchedule.tsx`, `useVacations.ts`, `useGeolocation.ts`, `useSuperAdmin.ts`, `Attendance.tsx`, `ReportRunsCard.tsx`, `WorkLocationsSection.tsx`).
+4. ~~Los duplicados de identificadores en `types.ts`~~ — **hecho, y la causa raíz era otra**: no era el archivo generado el que estaba mal, eran 2 migraciones (`20260424101500`, `20260707140000`) que nunca se habían pusheado a la BD remota. Se pushearon con `supabase db push --linked` (confirmado con el usuario) y se regeneró `types.ts` desde el esquema ya completo.
 
 **No bloqueantes, pero vale la pena registrar como deuda:**
 5. Limpiar el re-export vestigial `export { es }` en `useAttendanceSummary.ts` (ya no se usa, `GlobalPanel.tsx` importa `es` directamente).
