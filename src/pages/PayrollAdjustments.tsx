@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDepartments } from '@/hooks/useDepartments';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,11 +26,13 @@ function formatCurrency(amount: number): string {
 
 export default function PayrollAdjustments() {
   const { role } = useAuth();
+  const { departments } = useDepartments();
   const {
     employees, adjustments, totalsByEmployee, loading, saving,
     updateMonthlySalary, createManualAdjustment, revertAdjustment,
   } = usePayrollAdjustments();
 
+  const [departmentFilter, setDepartmentFilter] = useState('all');
   const [salaryDrafts, setSalaryDrafts] = useState<Record<string, string>>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState('');
@@ -38,6 +41,13 @@ export default function PayrollAdjustments() {
   const [reason, setReason] = useState('');
 
   const canSubmit = Boolean(selectedEmployee) && Number(amountInput) !== 0 && !saving;
+
+  const filteredEmployees = employees.filter(
+    (employee) => departmentFilter === 'all' || employee.department_id === departmentFilter
+  );
+  const filteredAdjustments = adjustments.filter(
+    (item) => departmentFilter === 'all' || item.department_id === departmentFilter
+  );
 
   if (role !== 'global_manager' && role !== 'superadmin') {
     return (
@@ -76,55 +86,66 @@ export default function PayrollAdjustments() {
               Sueldos mensuales, descuentos automáticos por ausencias no justificadas y ajustes manuales por vacaciones u otros motivos.
             </p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" /> Nuevo ajuste manual</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Registrar ajuste manual</DialogTitle>
-                <DialogDescription>Usa un monto negativo para un descuento y positivo para un abono.</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <Label>Empleado</Label>
-                  <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-                    <SelectTrigger><SelectValue placeholder="Selecciona empleado" /></SelectTrigger>
-                    <SelectContent className="bg-popover z-50">
-                      {employees.map((employee) => (
-                        <SelectItem key={employee.user_id} value={employee.user_id}>{employee.full_name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
+          <div className="flex items-center gap-2">
+            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+              <SelectTrigger className="w-[200px]"><SelectValue placeholder="Departamento" /></SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                <SelectItem value="all">Todos los departamentos</SelectItem>
+                {departments.map((department) => (
+                  <SelectItem key={department.id} value={department.id}>{department.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4 mr-2" /> Nuevo ajuste manual</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Registrar ajuste manual</DialogTitle>
+                  <DialogDescription>Usa un monto negativo para un descuento y positivo para un abono.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3">
                   <div className="space-y-2">
-                    <Label>Monto (MXN)</Label>
-                    <Input type="number" step="0.01" value={amountInput} onChange={(e) => setAmountInput(e.target.value)} placeholder="-500.00" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Categoría</Label>
-                    <Select value={category} onValueChange={(value: 'vacation' | 'other') => setCategory(value)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Label>Empleado</Label>
+                    <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+                      <SelectTrigger><SelectValue placeholder="Selecciona empleado" /></SelectTrigger>
                       <SelectContent className="bg-popover z-50">
-                        <SelectItem value="vacation">Vacaciones</SelectItem>
-                        <SelectItem value="other">Otro</SelectItem>
+                        {employees.map((employee) => (
+                          <SelectItem key={employee.user_id} value={employee.user_id}>{employee.full_name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label>Monto (MXN)</Label>
+                      <Input type="number" step="0.01" value={amountInput} onChange={(e) => setAmountInput(e.target.value)} placeholder="-500.00" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Categoría</Label>
+                      <Select value={category} onValueChange={(value: 'vacation' | 'other') => setCategory(value)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent className="bg-popover z-50">
+                          <SelectItem value="vacation">Vacaciones</SelectItem>
+                          <SelectItem value="other">Otro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Motivo</Label>
+                    <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Explica el motivo del ajuste" className="min-h-[70px]" />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button onClick={handleCreateAdjustment} disabled={!canSubmit}>
+                      {saving ? 'Guardando...' : 'Registrar ajuste'}
+                    </Button>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Motivo</Label>
-                  <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Explica el motivo del ajuste" className="min-h-[70px]" />
-                </div>
-                <div className="flex justify-end">
-                  <Button onClick={handleCreateAdjustment} disabled={!canSubmit}>
-                    {saving ? 'Guardando...' : 'Registrar ajuste'}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         <Card>
@@ -135,8 +156,10 @@ export default function PayrollAdjustments() {
           <CardContent className="space-y-2 max-h-[360px] overflow-auto">
             {loading ? (
               <p className="text-xs text-muted-foreground">Cargando...</p>
+            ) : filteredEmployees.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Ningún empleado en este departamento.</p>
             ) : (
-              employees.map((employee) => {
+              filteredEmployees.map((employee) => {
                 const draft = salaryDrafts[employee.user_id] ?? (employee.monthly_salary?.toString() ?? '');
                 const total = totalsByEmployee.get(employee.user_id) || 0;
                 return (
@@ -184,12 +207,12 @@ export default function PayrollAdjustments() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {adjustments.length === 0 ? (
+                {filteredAdjustments.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No hay ajustes registrados</TableCell>
                   </TableRow>
                 ) : (
-                  adjustments.map((item) => (
+                  filteredAdjustments.map((item) => (
                     <TableRow key={item.id} className={item.status === 'reverted' ? 'opacity-50' : undefined}>
                       <TableCell className="text-xs">{new Date(item.created_at).toLocaleString()}</TableCell>
                       <TableCell className="text-xs">{item.employee_name}</TableCell>

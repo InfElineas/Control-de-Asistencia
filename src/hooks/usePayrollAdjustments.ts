@@ -27,6 +27,7 @@ export interface PayrollAdjustment {
   created_at: string;
   employee_name: string;
   employee_email: string;
+  department_id: string;
   department_name: string;
 }
 
@@ -89,6 +90,7 @@ export function usePayrollAdjustments() {
           created_at: row.created_at,
           employee_name: profile?.full_name || 'Desconocido',
           employee_email: profile?.email || '',
+          department_id: profile?.department_id || '',
           department_name: departments.find((d) => d.id === profile?.department_id)?.name || 'Sin departamento',
         };
       })
